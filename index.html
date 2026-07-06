@@ -839,101 +839,7 @@
       </div>
 
       <div class="grid" id="grid">
-        <div class="card" data-cat="ba" data-video="VIDEO_ID_1" data-title="Série Événement — Teaser">
-          <div class="card-thumb">
-            <span class="card-tc">MONTAGE 001</span>
-            <span class="card-cat">Bande-annonce</span>
-            <div class="play"></div>
-          </div>
-          <div class="card-body">
-            <h3>Série Événement — Teaser</h3>
-            <div class="client">TF1 · 20s</div>
-          </div>
-        </div>
-
-        <div class="card" data-cat="ba" data-video="VIDEO_ID_2" data-title="Prime Time — Bande-annonce">
-          <div class="card-thumb">
-            <span class="card-tc">MONTAGE 002</span>
-            <span class="card-cat">Bande-annonce</span>
-            <div class="play"></div>
-          </div>
-          <div class="card-body">
-            <h3>Prime Time — Bande-annonce</h3>
-            <div class="client">TF1 · 30s</div>
-          </div>
-        </div>
-
-        <div class="card" data-cat="ba" data-video="VIDEO_ID_3" data-title="Access — Teaser 15s">
-          <div class="card-thumb">
-            <span class="card-tc">MONTAGE 003</span>
-            <span class="card-cat">Bande-annonce</span>
-            <div class="play"></div>
-          </div>
-          <div class="card-body">
-            <h3>Access — Teaser 15s</h3>
-            <div class="client">TF1 · 15s</div>
-          </div>
-        </div>
-
-        <div class="card" data-cat="ba" data-video="VIDEO_ID_4" data-title="Rentrée — Bande-annonce saison">
-          <div class="card-thumb">
-            <span class="card-tc">MONTAGE 004</span>
-            <span class="card-cat">Bande-annonce</span>
-            <div class="play"></div>
-          </div>
-          <div class="card-body">
-            <h3>Rentrée — Bande-annonce saison</h3>
-            <div class="client">TF1 · 45s</div>
-          </div>
-        </div>
-
-        <div class="card" data-cat="fiction" data-video="VIDEO_ID_5" data-title="Court-métrage — Rupture">
-          <div class="card-thumb">
-            <span class="card-tc">MONTAGE 005</span>
-            <span class="card-cat">Fiction</span>
-            <div class="play"></div>
-          </div>
-          <div class="card-body">
-            <h3>Court-métrage — Rupture</h3>
-            <div class="client">Projet Bachelor · 12min</div>
-          </div>
-        </div>
-
-        <div class="card" data-cat="fiction" data-video="VIDEO_ID_6" data-title="Web-série — Épisode 1">
-          <div class="card-thumb">
-            <span class="card-tc">MONTAGE 006</span>
-            <span class="card-cat">Fiction</span>
-            <div class="play"></div>
-          </div>
-          <div class="card-body">
-            <h3>Web-série — Épisode 1</h3>
-            <div class="client">Projet perso · 8min</div>
-          </div>
-        </div>
-
-        <div class="card" data-cat="cause" data-video="VIDEO_ID_7" data-title="Reconstruire — Documentaire court">
-          <div class="card-thumb">
-            <span class="card-tc">MONTAGE 007</span>
-            <span class="card-cat">Film de cause</span>
-            <div class="play"></div>
-          </div>
-          <div class="card-body">
-            <h3>Reconstruire — Documentaire court</h3>
-            <div class="client">Association · 4min</div>
-          </div>
-        </div>
-
-        <div class="card" data-cat="pub" data-video="VIDEO_ID_8" data-title="Campagne printemps">
-          <div class="card-thumb">
-            <span class="card-tc">MONTAGE 008</span>
-            <span class="card-cat">Pub</span>
-            <div class="play"></div>
-          </div>
-          <div class="card-body">
-            <h3>Campagne printemps</h3>
-            <div class="client">Client · 30s</div>
-          </div>
-        </div>
+        <p class="portfolio-sub" id="gridLoading" style="grid-column:1/-1;">Chargement des projets…</p>
       </div>
     </div>
   </section>
@@ -1023,17 +929,20 @@
   }
   setInterval(tick, 40);
 
-  // Filtres portfolio
+  // Filtres portfolio (fonctionnent sur les cartes, générées dynamiquement plus bas)
   const filters = document.querySelectorAll('.filter');
-  const cards = document.querySelectorAll('.card');
+  function applyActiveFilter(){
+    const active = document.querySelector('.filter.active');
+    const f = active ? active.dataset.filter : 'all';
+    document.querySelectorAll('.card').forEach(c => {
+      c.style.display = (f === 'all' || c.dataset.cat === f) ? 'flex' : 'none';
+    });
+  }
   filters.forEach(btn => {
     btn.addEventListener('click', () => {
       filters.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      const f = btn.dataset.filter;
-      cards.forEach(c => {
-        c.style.display = (f === 'all' || c.dataset.cat === f) ? 'flex' : 'none';
-      });
+      applyActiveFilter();
     });
   });
 
@@ -1056,13 +965,15 @@
     document.body.style.overflow = '';
   }
 
-  cards.forEach(card => {
-    card.addEventListener('click', () => {
-      const youtubeId = card.dataset.video;
-      const title = card.dataset.title;
-      if(youtubeId){ openLightbox(youtubeId, title); }
+  function bindCardClicks(){
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', () => {
+        const youtubeId = card.dataset.video;
+        const title = card.dataset.title;
+        if(youtubeId){ openLightbox(youtubeId, title); }
+      });
     });
-  });
+  }
 
   lightboxClose.addEventListener('click', closeLightbox);
   lightbox.addEventListener('click', (e) => {
@@ -1071,6 +982,74 @@
   document.addEventListener('keydown', (e) => {
     if(e.key === 'Escape'){ closeLightbox(); }
   });
+</script>
+
+<!-- Firebase — chargement des projets réels + compteur de visites -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBp3mXXt3iud7VPr5YEz7TLg1ar0cd6AT4",
+    authDomain: "techopsprod-portfolio.firebaseapp.com",
+    projectId: "techopsprod-portfolio",
+    storageBucket: "techopsprod-portfolio.firebasestorage.app",
+    messagingSenderId: "529098449886",
+    appId: "1:529098449886:web:302685cfc44c7dab65734f"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const categoryLabels = {
+    ba: 'Bande-annonce',
+    fiction: 'Fiction',
+    cause: 'Film de cause',
+    pub: 'Pub'
+  };
+
+  // Charge les projets réels depuis Firestore et construit les cartes
+  db.collection('videos').orderBy('createdAt', 'desc').get().then(snapshot => {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+
+    if(snapshot.empty){
+      grid.innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;">De nouveaux projets arrivent bientôt.</p>';
+      return;
+    }
+
+    let n = snapshot.size;
+    snapshot.forEach(doc => {
+      const v = doc.data();
+      const num = String(n).padStart(3, '0');
+      n--;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.cat = v.category || '';
+      card.dataset.video = v.youtubeId || '';
+      card.dataset.title = v.title || '';
+      card.innerHTML = `
+        <div class="card-thumb">
+          <span class="card-tc">MONTAGE ${num}</span>
+          <span class="card-cat">${v.categoryLabel || categoryLabels[v.category] || ''}</span>
+          <div class="play"></div>
+        </div>
+        <div class="card-body">
+          <h3>${v.title || ''}</h3>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    bindCardClicks();
+    applyActiveFilter();
+  }).catch(err => {
+    console.error('Erreur de chargement des projets :', err);
+    document.getElementById('grid').innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;">Impossible de charger les projets pour le moment.</p>';
+  });
+
+  // Compteur de visites du site (silencieux, visible uniquement depuis /admin)
+  db.collection('stats').doc('siteVisits').set(
+    { count: firebase.firestore.FieldValue.increment(1) },
+    { merge: true }
+  ).catch(err => console.error('Erreur compteur de visites :', err));
 </script>
 
 </body>

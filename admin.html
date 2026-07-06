@@ -805,23 +805,23 @@
         <button class="admin-logout" id="logoutBtn">Se déconnecter</button>
       </div>
 
-      <div class="demo-banner"><strong>Aperçu de démonstration —</strong> les chiffres ci-dessous sont fictifs. Ils seront remplacés par les vraies données une fois Firebase et l'API YouTube connectés.</div>
+      <div class="demo-banner" id="demoBanner"><strong>Note —</strong> les vues YouTube par vidéo nécessitent une clé API YouTube (pas encore configurée). Le reste est connecté en direct à Firebase.</div>
 
       <div class="stat-cards">
         <div class="stat-card">
           <div class="stat-label">Visites du site (total)</div>
-          <div class="stat-value">1 284</div>
-          <div class="stat-delta">+42 cette semaine</div>
+          <div class="stat-value" id="statVisits">—</div>
+          <div class="stat-delta">Depuis la mise en ligne</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Vues cumulées (vidéos)</div>
-          <div class="stat-value">3 902</div>
-          <div class="stat-delta">Source : YouTube</div>
+          <div class="stat-value">—</div>
+          <div class="stat-delta">API YouTube à configurer</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Projets en ligne</div>
-          <div class="stat-value">8</div>
-          <div class="stat-delta">4 bandes-annonces</div>
+          <div class="stat-value" id="statVideoCount">—</div>
+          <div class="stat-delta" id="statVideoDelta">&nbsp;</div>
         </div>
       </div>
 
@@ -829,25 +829,26 @@
       <form class="add-video-form" id="addVideoForm">
         <div class="admin-field">
           <label>Lien YouTube</label>
-          <input type="text" placeholder="https://youtube.com/watch?v=..." required>
+          <input type="text" id="videoLink" placeholder="https://youtube.com/watch?v=..." required>
         </div>
         <div class="admin-field">
           <label>Titre du projet</label>
-          <input type="text" placeholder="Ex : Access — Teaser 15s" required>
+          <input type="text" id="videoTitle" placeholder="Ex : Access — Teaser 15s" required>
         </div>
         <div class="admin-field">
           <label>Catégorie</label>
-          <select>
-            <option>Bande-annonce</option>
-            <option>Fiction</option>
-            <option>Film de cause</option>
-            <option>Pub</option>
+          <select id="videoCategory">
+            <option value="ba">Bande-annonce</option>
+            <option value="fiction">Fiction</option>
+            <option value="cause">Film de cause</option>
+            <option value="pub">Pub</option>
           </select>
         </div>
         <button type="submit" class="admin-submit">Ajouter</button>
       </form>
+      <p class="admin-note" id="addVideoMsg">&nbsp;</p>
 
-      <h2 class="admin-section-title">Statistiques par vidéo</h2>
+      <h2 class="admin-section-title">Projets en ligne</h2>
       <table class="video-stats-table" id="videoTable">
         <thead>
           <tr>
@@ -857,46 +858,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>Série Événement — Teaser</td>
-            <td><span class="tag-pill">Bande-annonce</span></td>
-            <td class="num">842</td>
-          </tr>
-          <tr>
-            <td>Prime Time — Bande-annonce</td>
-            <td><span class="tag-pill">Bande-annonce</span></td>
-            <td class="num">1 205</td>
-          </tr>
-          <tr>
-            <td>Access — Teaser 15s</td>
-            <td><span class="tag-pill">Bande-annonce</span></td>
-            <td class="num">356</td>
-          </tr>
-          <tr>
-            <td>Rentrée — Bande-annonce saison</td>
-            <td><span class="tag-pill">Bande-annonce</span></td>
-            <td class="num">610</td>
-          </tr>
-          <tr>
-            <td>Court-métrage — Rupture</td>
-            <td><span class="tag-pill">Bande-annonce</span></td>
-            <td class="num">289</td>
-          </tr>
-          <tr>
-            <td>Web-série — Épisode 1</td>
-            <td><span class="tag-pill">Bande-annonce</span></td>
-            <td class="num">198</td>
-          </tr>
-          <tr>
-            <td>Reconstruire — Documentaire court</td>
-            <td><span class="tag-pill">Bande-annonce</span></td>
-            <td class="num">312</td>
-          </tr>
-          <tr>
-            <td>Campagne printemps</td>
-            <td><span class="tag-pill">Bande-annonce</span></td>
-            <td class="num">90</td>
-          </tr>
+          <tr><td colspan="3" style="color:var(--text-muted);">Chargement…</td></tr>
         </tbody>
       </table>
     </div>
@@ -910,6 +872,24 @@
   </div>
 </footer>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBp3mXXt3iud7VPr5YEz7TLg1ar0cd6AT4",
+    authDomain: "techopsprod-portfolio.firebaseapp.com",
+    projectId: "techopsprod-portfolio",
+    storageBucket: "techopsprod-portfolio.firebasestorage.app",
+    messagingSenderId: "529098449886",
+    appId: "1:529098449886:web:302685cfc44c7dab65734f"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+</script>
+
 <script>
   function pad(n){ return n.toString().padStart(2,'0'); }
   let frame = 0;
@@ -922,40 +902,130 @@
   }
   setInterval(tick, 40);
 
-  // --- DÉMONSTRATION UNIQUEMENT ---
-  // Cette logique sera remplacée par une vraie authentification Firebase
-  // et de vraies écritures/lectures Firestore + API YouTube.
   const gateScreen = document.getElementById('gateScreen');
   const dashboard = document.getElementById('dashboard');
   const loginForm = document.getElementById('loginForm');
   const logoutBtn = document.getElementById('logoutBtn');
   const addVideoForm = document.getElementById('addVideoForm');
   const videoTable = document.getElementById('videoTable').querySelector('tbody');
+  const addVideoMsg = document.getElementById('addVideoMsg');
 
+  const categoryLabels = {
+    ba: 'Bande-annonce',
+    fiction: 'Fiction',
+    cause: 'Film de cause',
+    pub: 'Pub'
+  };
+
+  // Extrait l'identifiant YouTube depuis différents formats de lien
+  function extractYoutubeId(url){
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=)([^&\s]+)/,
+      /(?:youtu\.be\/)([^?&\s]+)/,
+      /(?:youtube\.com\/embed\/)([^?&\s]+)/,
+      /(?:youtube\.com\/shorts\/)([^?&\s]+)/
+    ];
+    for(const re of patterns){
+      const m = url.match(re);
+      if(m) return m[1];
+    }
+    return null;
+  }
+
+  function loadDashboardData(){
+    // Compteur de visites du site
+    db.collection('stats').doc('siteVisits').get().then(doc => {
+      const count = doc.exists ? (doc.data().count || 0) : 0;
+      document.getElementById('statVisits').textContent = count.toLocaleString('fr-FR');
+    }).catch(err => console.error('Erreur lecture visites :', err));
+
+    // Liste des vidéos
+    db.collection('videos').orderBy('createdAt', 'desc').get().then(snapshot => {
+      document.getElementById('statVideoCount').textContent = snapshot.size;
+      const baCount = snapshot.docs.filter(d => d.data().category === 'ba').length;
+      document.getElementById('statVideoDelta').textContent = baCount + ' bande(s)-annonce(s)';
+
+      videoTable.innerHTML = '';
+      if(snapshot.empty){
+        videoTable.innerHTML = '<tr><td colspan="3" style="color:var(--text-muted);">Aucun projet ajouté pour le moment.</td></tr>';
+        return;
+      }
+      snapshot.forEach(doc => {
+        const v = doc.data();
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${v.title || ''}</td><td><span class="tag-pill">${v.categoryLabel || categoryLabels[v.category] || ''}</span></td><td class="num">—</td>`;
+        videoTable.appendChild(row);
+      });
+    }).catch(err => {
+      console.error('Erreur lecture vidéos :', err);
+      videoTable.innerHTML = '<tr><td colspan="3" style="color:var(--text-muted);">Erreur de chargement.</td></tr>';
+    });
+  }
+
+  // Connexion Firebase
   loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    // TODO (Firebase) : remplacer par firebase.auth().signInWithEmailAndPassword(...)
-    gateScreen.style.display = 'none';
-    dashboard.classList.add('visible');
+    const email = loginForm.querySelector('input[type="email"]').value;
+    const pass = loginForm.querySelector('input[type="password"]').value;
+    const submitBtn = loginForm.querySelector('.admin-submit');
+    submitBtn.textContent = 'Connexion…';
+    auth.signInWithEmailAndPassword(email, pass)
+      .catch(err => {
+        alert('Connexion refusée : identifiant ou mot de passe incorrect.');
+        console.error(err);
+      })
+      .finally(() => { submitBtn.textContent = 'Se connecter'; });
   });
 
   logoutBtn.addEventListener('click', () => {
-    // TODO (Firebase) : remplacer par firebase.auth().signOut()
-    dashboard.classList.remove('visible');
-    gateScreen.style.display = 'flex';
+    auth.signOut();
   });
 
+  // Affiche automatiquement le tableau de bord si déjà connecté
+  auth.onAuthStateChanged(user => {
+    if(user){
+      gateScreen.style.display = 'none';
+      dashboard.classList.add('visible');
+      loadDashboardData();
+    } else {
+      gateScreen.style.display = 'flex';
+      dashboard.classList.remove('visible');
+    }
+  });
+
+  // Ajout d'une vidéo (écrit directement dans Firestore, visible immédiatement sur le site public)
   addVideoForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    // TODO (Firebase) : remplacer par un ajout Firestore (collection "videos")
-    // + appel YouTube Data API pour récupérer le titre/miniature/vues réels
-    const inputs = addVideoForm.querySelectorAll('input, select');
-    const title = inputs[1].value || 'Nouveau projet';
-    const cat = inputs[2].value;
-    const row = document.createElement('tr');
-    row.innerHTML = `<td>${title}</td><td><span class="tag-pill">${cat}</span></td><td class="num">0</td>`;
-    videoTable.prepend(row);
-    addVideoForm.reset();
+    const link = document.getElementById('videoLink').value.trim();
+    const title = document.getElementById('videoTitle').value.trim();
+    const category = document.getElementById('videoCategory').value;
+    const youtubeId = extractYoutubeId(link);
+
+    if(!youtubeId){
+      addVideoMsg.textContent = "Lien YouTube non reconnu — vérifie le format du lien.";
+      addVideoMsg.style.color = 'var(--accent)';
+      return;
+    }
+
+    const submitBtn = addVideoForm.querySelector('.admin-submit');
+    submitBtn.textContent = 'Ajout…';
+
+    db.collection('videos').add({
+      title,
+      category,
+      categoryLabel: categoryLabels[category],
+      youtubeId,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      addVideoMsg.textContent = 'Vidéo ajoutée — elle est déjà visible sur le site public.';
+      addVideoMsg.style.color = 'var(--text-muted)';
+      addVideoForm.reset();
+      loadDashboardData();
+    }).catch(err => {
+      addVideoMsg.textContent = "Erreur lors de l'ajout — réessaie.";
+      addVideoMsg.style.color = 'var(--accent)';
+      console.error(err);
+    }).finally(() => { submitBtn.textContent = 'Ajouter'; });
   });
 </script>
 

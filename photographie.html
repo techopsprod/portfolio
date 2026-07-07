@@ -83,7 +83,7 @@
     padding:18px 32px;
     max-width:1140px; margin:0 auto;
   }
-  .nav-id{ display:flex; align-items:center; gap:12px; }
+  .nav-id{ display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; cursor:pointer; }
   .nav-id .mark{
     font-family:'Barlow Condensed'; font-weight:700; font-size:1.15rem; letter-spacing:0.03em;
   }
@@ -208,6 +208,11 @@
     overflow:hidden;
     background:
       repeating-linear-gradient(135deg, #20242C 0 2px, #23272F 2px 4px);
+  }
+  .card-thumb img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
   }
   .card-thumb::after{
     content:"";
@@ -494,13 +499,68 @@
   color:var(--accent); border:1px solid var(--accent-dim); padding:3px 9px; display:inline-block;
 }
 
+/* ---------- ÉDITION EN LIGNE DES PROJETS (admin) ---------- */
+.row-edit-input{
+  width:100%;
+  background:transparent;
+  border:1px solid transparent;
+  color:var(--text);
+  font-family:'Work Sans', sans-serif;
+  font-size:0.88rem;
+  padding:6px 8px;
+  transition:.15s;
+}
+.row-edit-input:hover{ border-color:var(--line); }
+.row-edit-input:focus{ outline:none; border-color:var(--accent); background:var(--bg); }
+
+.row-edit-select{
+  background:var(--bg);
+  border:1px solid var(--line);
+  color:var(--text-dim);
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.68rem;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  padding:6px 8px;
+  cursor:pointer;
+}
+.row-edit-select:focus{ outline:none; border-color:var(--accent); }
+
+.row-delete-btn{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.65rem;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  background:transparent;
+  border:1px solid var(--line);
+  padding:7px 12px;
+  cursor:pointer;
+  transition:.15s;
+  white-space:nowrap;
+}
+.row-delete-btn:hover{ color:var(--accent); border-color:var(--accent); }
+
+.new-category-field{
+  display:none;
+  margin-top:10px;
+}
+.new-category-field.visible{ display:block; }
+
+.photo-thumb-preview{
+  width:70px; height:46px;
+  object-fit:cover;
+  display:block;
+  background:var(--surface-2);
+}
+
 </style>
 </head>
 <body>
 
 <header>
   <div class="nav">
-    <div class="nav-id">
+    <a class="nav-id" href="index.html">
       <svg class="logo-mark" viewBox="0 0 1879.14 1466.31" xmlns="http://www.w3.org/2000/svg">
   <path d="M1391.36,880.41c.56,0,1.01-.58,1.01-1.29s.56-1.29,0-1.29-2.02,.58-2.02,1.29,.45,1.29,1.01,1.29h0Z"/>
   <path d="M1459.84,979.96c-2.59-7.76-15.51-12.93-24.57-15.51-9.05-2.59-50.42-3.88-54.29-2.59-3.88,1.29-27.15,19.4-45.25,31.02-18.1,11.64-19.4,18.1-25.85,20.68-6.46,2.58-9.05,6.47-14.22,10.34-5.17,3.88-24.57-43.95-27.15-54.92-1.2-5.08-.76-14.34,.48-18.93-.41,.39-1.59,1.49-1.9,1.9-3.88,5.17-11.49,24.11-14.08,29.28-2.38,4.77-1.29,3.88-1.29,1.29s6.47-15.51,10.34-24.57c3.66-8.54,5.03-7.91,7.76-10.34,2.99-2.33,4.62-3.47,5.17-3.88,5.17-3.88,12.93-9.05,17.33-13.96s21.45-17.06,31.79-26.12c10.34-9.06,27.15-6.47,33.61-6.47s11.64,11.64,12.93,15.51c1.29,3.88,0,5.17-.81,7.76-.81,2.59,3.39,0,3.39,0,11.64-7.76,6.47-20.68,6.47-23.27s7.76,7.76,7.76,7.76c0,0-2.9-6.26-4.2-10.14-1.29-3.88,2.9-1.49,9.37,2.38,6.47,3.88,.78,15.79-1.75,20.47-2.98,5.5,16.19-15.23,18.56-21.77,1.59-4.38-.47-9.65-4.28-13.46-2.05-2.05,.45-4.34,1.69-27.9,1.29-24.57,0-27.15-2.59-33.61-1.64-4.08-12.71-16.04-25.85-27.15-6.17-5.21-14.43-10.5-19.4-14.22-15.51-11.64-33.61-15.51-53.01-15.51s-21.98,1.29-37.49,3.88c0,0-1.92,.49-4.94,1.03-4.93-.14-9.81-1.03-14.36-2.89-3.53-1.42-6.47-3.65-9.45-6.04-3.02-2.35-5.84-4.89-8.37-7.74-7.58-8.68-12.85-19.11-18.11-29.32,4.86,10.48,9.72,21.17,17.02,30.25,2.47,3.02,5.28,5.78,8.24,8.28,2.89,2.59,6.16,5.06,9.79,6.59,2.05,.88,4.14,1.57,6.28,2.09-2.19,.2-4.48,.32-6.78,.32-5.76,0-15.65-4.55-20.84-6.95-2.09-1.39-4.11-2.89-6.03-4.52-6.53-5.46-10.69-13.04-15.41-20.01-3.36-5.21-7.24-11.36-11.19-17.68,1.25-1.38,1.72-8.3,3.68-12.24,1.29-2.59,6.47-2.59,6.47-3.88s0-2.59-3.88-9.05c-5.72-9.53-9.33-14.96-12.93-24.57-5.17-13.8-6.47-19.4-10.34-31.02-3.77-11.3-4.37-13.07-10.27-20.95-2.24-2.98-7.34-13-9.46-17.22-.12-.25-.5-.1-.43,.16,1.6,6.33,6.57,25.58,9.83,34.14,2.92,7.69,5.78,14.36,6.47,18.1,.95,5.25,2.22,13.35-5.17,6.47-6.27-5.85-10.58-4.64-13.99-9.65-1.28-3.01-2.46-6.05-3.49-9.12-3.92-11.42-5.41-23.48-5.79-35.52-.18,6.05-.06,12.11,.48,18.17,1.96,17.22,8.33,33.69,17.29,48.49,.11,.2,.22,.39,.32,.57,3.88,6.47,27.15,42.66,29.74,46.54,.28,.42,.52,.66,.74,.77,3.66,6.04,7.36,12.04,11.16,18.01,4.68,7.08,8.97,14.69,15.63,20.16,1.04,.86,2.11,1.67,3.21,2.46-.3,0,.91,.88,4.41,3.21,14.03,9.35,48.23,34.92,54.69,42.68,6.47,7.76,6.47,12.93,6.47,20.68s-1.29,42.66-1.29,42.66c0,0-1.29,21.98-11.64,34.91-10.34,12.93-5.17,7.76-21.98,33.61-16.81,25.85-9.05,43.95,9.05,69.81,9.46,13.53,18.22,29.53,24.43,41.71,.87,1.76,14.23,29.2,5.02,31.96-5.77,1.73-11.08,2.18-16.11,3.49-.78,0-2.08,.37-4.22,1.39-1.78,.72-3.52,1.65-5.25,2.88-12.93,7.76-12.93,1.29-12.93,1.29,0,0-2.59-12.93-3.88-14.22-1.29-1.29-1.29,1.29-1.29,9.05s-3.88,6.47-14.22,10.34c-10.34,3.88-14.22-2.59-19.4-7.76-5.17-5.17-10.34-20.68-11.64-25.85s-7.76-5.17-18.1-12.93c-10.34-7.76,1.29-24.57,1.29-24.57,0,0,5.17-9.05,1.29-6.47-3.88,2.59-9.05,2.59-20.68,1.29-11.64-1.29-5.17-9.05-5.17-9.05,0,0,21.98-5.17,2.59-10.34-19.39-5.17-14.22-21.98-14.22-36.2,0,0,1.29-19.4,1.29-29.74s-3.88-7.76-5.17,7.76c-1.3,15.52-5.17,25.85-11.64,32.32-6.47,6.47-5.17,10.34-5.17,10.34,1.29,12.93-9.05,9.05-9.05,9.05l6.47,3.88s18.1,10.34,19.4,18.1c1.29,7.76,7.76,14.22,10.34,27.15,2.59,12.93,10.34,9.05,15.51,10.34s6.47,19.4,7.76,31.02c1.29,11.64,3.88,5.17,7.76,0,3.88-5.17,0-10.34,6.47-11.64,6.47-1.29,1.29,5.17,3.88,10.34,2.59,5.17,9.05,11.64,9.05,19.4s5.17,5.17,5.17,3.88,7.76-5.17,15.51-7.76c7.76-2.59,15.51-1.29,17.62-1.37s4.36-7.67,5.66-3.8c1.29,3.88,3.88,3.88,9.09,3.77,2.54-.06,6.58-2.49,10.05-4.96l.03,.02c.32-.28,.68-.54,1.04-.8,.04-.03,.09-.07,.12-.1,5.99-4.25,16.28-6.98,19.78-7.67,4.76-.95,8.57-2.86,8.57-11.43,0-1.89,1.98-3.49,4.03-4.66,9.48-2.99,19.25-10.71,27.42-16.84,10.34-7.76,19.4-9.05,21.98-9.05s6.47,5.17,10.34,15.51c3.88,10.34,9.05,9.05,10.34,9.05s1.29-1.29,5.17,1.29c3.88,2.59,10.34,2.59,14.22,1.29,3.88-1.29,10.34-5.17,5.17-3.88-5.17,1.29-19.4-1.29-18.1-5.17,1.29-3.88,0-7.76-1.29-10.34s1.29-3.88,2.59-2.59c1.29,1.29,19.4,9.05,23.27,9.05s1.29-2.59,6.47-2.59,9.05,6.47,9.05,6.47c0-10.43-9.05-11.64-9.05-11.64-1.29-6.47-1.29-5.17-16.81-12.93s0-7.76,7.76-7.76,11.64,3.88,19.4,3.88,7.63-8.25,11.64-9.05c6.47-1.29,12.93,9.05,12.93,9.05-1.29-15.51-16.81-14.22-16.81-14.22-3.88-3.88-20.68-5.17-24.57-3.88-3.88,1.29-31.02,5.17-45.25,7.76-14.23,2.59-31.02,14.22-38.78,18.1-.93,.47-1.79,.84-2.57,1.11l-5.19,1.47c-5.73-.88-7.77-.6-18.11,1.98-3.97,.99-7.74,3.19-9.04,1.89s16.81-5.17,21.98-6.47c.62-.15,1.36-.56,2.17-1.16,1.85-1.36,3.26-3.22,4.28-5.28,0,0,0-.02,0-.03,2.48-4.96,6.03-8.86,11.64-13.4h0c3.16-2.56,6.97-5.31,11.63-8.58,12.93-9.05,28.44-23.27,31.02-24.57,2.59-1.29,9.05,19.4,11.64,25.85,2.59,6.47,19.4,1.29,20.68-2.59,1.29-3.88-12.93-14.22-20.68-21.98-7.76-7.76,1.29-3.88,9.05-1.29,7.76,2.59,9.05-1.29,14.22-2.59,5.17-1.29,5.17,0,7.76,2.59,2.59,2.59,10.34,3.88,12.93,2.59s5.37,.4,7.76,5.17c2.59,5.17,0,11.64,2.59,5.17s1.29-7.76-6.47-16.81c-7.76-9.05-6.47-7.76-1.29-7.76s6.47-9.05,11.64-2.59c5.17,6.46,7.76,7.76,7.76,7.76,0,0,1.29,1.29,3.88-1.29,2.05-2.05,3.88,1.29,6.47,5.17s2.59,9.05,2.59,9.05c0,0,2.59-6.47,0-14.22l.02,.03Zm-66.12-106.06s8.57-7.62,9.52-5.71c.58,1.15,.34,4.08-.95,6.67s-16.14,12.04-16.14,12.04c0,0-8.95,4.97-15.53,7.61-3,1.2-5.5,1.91-6.45,1.45-2.59-1.29-5.17-1.29-5.17-1.29-1.29,0,5.76-5.78,9.01-8.36,2.86-2.29,5.65-2.51,9.52-3.81,3.88-1.29,16.19-8.57,16.19-8.57h0Zm-24.76-38.1c5.17,3.88,9.52,7.62,10.47,13.33,0,0,1.9,7.62-1.04,9.3-1.59,.9-5.55-1.95-9.44-4.54-3.4-2.27-2.2-4.5-2.2-13.56s-2.97-8.41,2.2-4.53Zm-8.57,34.28c1.9,1.9,3.24,1.69,3.81,2.86,1.25,2.52-3.37,7.18-6.67,10.47-3.81,3.81-3.93,5.84-9.52,11.43-.95,.95-.95,0-8.57,.95-2.56,.32-6.29,1.43-7.59,1.43s21.53-25.5,22.82-28.09,4.67-.1,5.71,.95Zm-48.56-6.67c1.83-5.01,4.33-15.07,5.71-30.47,0,0-.14-10,7.62-.95,7.76,9.05,20.95,22.85,18.09,26.66-2.19,2.92-17.27,22.99-27.61,33.33-9.52,9.52-21.9,20-21.9,20-8.57,6.67,3.81-9.52,18.09-48.56Z"/>
@@ -770,7 +830,7 @@
 </svg>
       <span class="mark">RODRIGUE CORPECHOT</span>
       <span class="role">TECHOPS — MONTEUR VIDÉO TF1</span>
-    </div>
+    </a>
     <nav class="nav-links">
       <a href="index.html#parcours">Parcours</a>
       <a href="index.html#portfolio">Montages</a>
@@ -793,15 +853,8 @@
 
   <section class="photo-gallery">
     <div class="wrap">
-      <div class="photo-grid">
-        <div class="photo-item wide"><span class="photo-label">Tournage — coulisses</span></div>
-        <div class="photo-item"><span class="photo-label">Portrait</span></div>
-        <div class="photo-item"><span class="photo-label">Extérieur</span></div>
-        <div class="photo-item"><span class="photo-label">Argentique</span></div>
-        <div class="photo-item wide"><span class="photo-label">Paysage</span></div>
-        <div class="photo-item"><span class="photo-label">Rue</span></div>
-        <div class="photo-item"><span class="photo-label">Lumière naturelle</span></div>
-        <div class="photo-item wide"><span class="photo-label">Nuit</span></div>
+      <div class="photo-grid" id="photoGrid">
+        <p class="portfolio-sub" style="grid-column:1/-1;">Chargement…</p>
       </div>
     </div>
   </section>
@@ -813,6 +866,44 @@
     <span>Monteur vidéo — Intermittent du spectacle</span>
   </div>
 </footer>
+
+<!-- Firebase — chargement des photos réelles -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBp3mXXt3iud7VPr5YEz7TLg1ar0cd6AT4",
+    authDomain: "techopsprod-portfolio.firebaseapp.com",
+    projectId: "techopsprod-portfolio",
+    storageBucket: "techopsprod-portfolio.firebasestorage.app",
+    messagingSenderId: "529098449886",
+    appId: "1:529098449886:web:302685cfc44c7dab65734f"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  db.collection('photos').orderBy('createdAt', 'desc').get().then(snapshot => {
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = '';
+    if(snapshot.empty){
+      grid.innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;">De nouvelles photos arrivent bientôt.</p>';
+      return;
+    }
+    snapshot.forEach((doc, i) => {
+      const p = doc.data();
+      const item = document.createElement('div');
+      item.className = 'photo-item' + (i % 3 === 0 ? ' wide' : '');
+      item.style.backgroundImage = `url('${p.url}')`;
+      item.style.backgroundSize = 'cover';
+      item.style.backgroundPosition = 'center';
+      item.innerHTML = `<span class="photo-label">${p.caption || ''}</span>`;
+      grid.appendChild(item);
+    });
+  }).catch(err => {
+    console.error('Erreur chargement photos :', err);
+    document.getElementById('photoGrid').innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;">Impossible de charger les photos pour le moment.</p>';
+  });
+</script>
 
 <script>
   function pad(n){ return n.toString().padStart(2,'0'); }

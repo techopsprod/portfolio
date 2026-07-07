@@ -74,7 +74,7 @@
     padding:18px 32px;
     max-width:1140px; margin:0 auto;
   }
-  .nav-id{ display:flex; align-items:center; gap:12px; }
+  .nav-id{ display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; cursor:pointer; }
   .nav-id .mark{
     font-family:'Barlow Condensed'; font-weight:700; font-size:1.15rem; letter-spacing:0.03em;
   }
@@ -199,6 +199,11 @@
     overflow:hidden;
     background:
       repeating-linear-gradient(135deg, #20242C 0 2px, #23272F 2px 4px);
+  }
+  .card-thumb img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
   }
   .card-thumb::after{
     content:"";
@@ -483,4 +488,59 @@
 .tag-pill{
   font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.04em; text-transform:uppercase;
   color:var(--accent); border:1px solid var(--accent-dim); padding:3px 9px; display:inline-block;
+}
+
+/* ---------- ÉDITION EN LIGNE DES PROJETS (admin) ---------- */
+.row-edit-input{
+  width:100%;
+  background:transparent;
+  border:1px solid transparent;
+  color:var(--text);
+  font-family:'Work Sans', sans-serif;
+  font-size:0.88rem;
+  padding:6px 8px;
+  transition:.15s;
+}
+.row-edit-input:hover{ border-color:var(--line); }
+.row-edit-input:focus{ outline:none; border-color:var(--accent); background:var(--bg); }
+
+.row-edit-select{
+  background:var(--bg);
+  border:1px solid var(--line);
+  color:var(--text-dim);
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.68rem;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  padding:6px 8px;
+  cursor:pointer;
+}
+.row-edit-select:focus{ outline:none; border-color:var(--accent); }
+
+.row-delete-btn{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.65rem;
+  letter-spacing:0.05em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  background:transparent;
+  border:1px solid var(--line);
+  padding:7px 12px;
+  cursor:pointer;
+  transition:.15s;
+  white-space:nowrap;
+}
+.row-delete-btn:hover{ color:var(--accent); border-color:var(--accent); }
+
+.new-category-field{
+  display:none;
+  margin-top:10px;
+}
+.new-category-field.visible{ display:block; }
+
+.photo-thumb-preview{
+  width:70px; height:46px;
+  object-fit:cover;
+  display:block;
+  background:var(--surface-2);
 }

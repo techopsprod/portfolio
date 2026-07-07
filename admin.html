@@ -291,20 +291,24 @@
 
 .photo-gallery{ padding:70px 0 100px; }
 .photo-grid{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:14px;
+  column-count: 3;
+  column-gap: 14px;
 }
-@media (max-width:860px){ .photo-grid{ grid-template-columns:repeat(2,1fr); } }
-@media (max-width:560px){ .photo-grid{ grid-template-columns:1fr; } }
+@media (max-width:860px){ .photo-grid{ column-count: 2; } }
+@media (max-width:560px){ .photo-grid{ column-count: 1; } }
 
 .photo-item{
   position:relative;
-  aspect-ratio:4/5;
   overflow:hidden;
+  break-inside: avoid;
+  margin-bottom: 14px;
   background:repeating-linear-gradient(135deg, #20242C 0 2px, #23272F 2px 4px);
 }
-.photo-item.wide{ aspect-ratio:16/10; }
+.photo-item img{
+  width:100%;
+  height:auto;
+  display:block;
+}
 .photo-item .photo-label{
   position:absolute; bottom:0; left:0; right:0;
   padding:14px 16px;
@@ -865,6 +869,8 @@
         <button class="admin-logout" id="logoutBtn">Se déconnecter</button>
       </div>
 
+      <p class="admin-note" id="youtubeApiError" style="display:none; color:var(--accent); border:1px solid var(--accent-dim); padding:12px 16px; margin-bottom:24px;">&nbsp;</p>
+
       <div class="stat-cards">
         <div class="stat-card">
           <div class="stat-label">Visites du site (total)</div>
@@ -946,13 +952,14 @@
       <table class="video-stats-table" id="photoTable">
         <thead>
           <tr>
+            <th>Ordre</th>
             <th>Aperçu</th>
             <th>Légende</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td colspan="3" style="color:var(--text-muted);">Chargement…</td></tr>
+          <tr><td colspan="4" style="color:var(--text-muted);">Chargement…</td></tr>
         </tbody>
       </table>
     </div>
@@ -1023,13 +1030,27 @@
     return fetch(url)
       .then(r => r.json())
       .then(data => {
+        const errorBox = document.getElementById('youtubeApiError');
+        if(data.error){
+          console.error('Erreur API YouTube :', data.error);
+          errorBox.textContent = `Erreur API YouTube (code ${data.error.code}) : ${data.error.message}`;
+          errorBox.style.display = 'block';
+          return {};
+        }
+        errorBox.style.display = 'none';
         const map = {};
         (data.items || []).forEach(item => {
           map[item.id] = parseInt(item.statistics.viewCount || '0', 10);
         });
         return map;
       })
-      .catch(err => { console.error('Erreur API YouTube :', err); return {}; });
+      .catch(err => {
+        console.error('Erreur API YouTube :', err);
+        const errorBox = document.getElementById('youtubeApiError');
+        errorBox.textContent = 'Impossible de contacter l\'API YouTube (erreur réseau).';
+        errorBox.style.display = 'block';
+        return {};
+      });
   }
 
   // Extrait l'identifiant YouTube depuis différents formats de lien
@@ -1183,16 +1204,46 @@
   });
 
   function loadPhotosData(){
-    db.collection('photos').orderBy('createdAt', 'desc').get().then(snapshot => {
+    db.collection('photos').orderBy('order', 'asc').get().then(snapshot => {
       photoTable.innerHTML = '';
       if(snapshot.empty){
-        photoTable.innerHTML = '<tr><td colspan="3" style="color:var(--text-muted);">Aucune photo ajoutée pour le moment.</td></tr>';
+        photoTable.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);">Aucune photo ajoutée pour le moment.</td></tr>';
         return;
       }
-      snapshot.forEach(docSnap => {
+      const docs = snapshot.docs; // ordre actuel, utile pour les échanges de position
+
+      docs.forEach((docSnap, index) => {
         const p = docSnap.data();
         const id = docSnap.id;
         const row = document.createElement('tr');
+
+        // Colonne ordre : boutons monter / descendre / première place
+        const orderCell = document.createElement('td');
+        orderCell.style.whiteSpace = 'nowrap';
+
+        const firstBtn = document.createElement('button');
+        firstBtn.className = 'row-delete-btn';
+        firstBtn.textContent = '⇤ Premier';
+        firstBtn.style.marginRight = '6px';
+        firstBtn.disabled = index === 0;
+        firstBtn.addEventListener('click', () => moveToFirst(docs, index));
+
+        const upBtn = document.createElement('button');
+        upBtn.className = 'row-delete-btn';
+        upBtn.textContent = '▲';
+        upBtn.style.marginRight = '4px';
+        upBtn.disabled = index === 0;
+        upBtn.addEventListener('click', () => swapOrder(docs, index, index - 1));
+
+        const downBtn = document.createElement('button');
+        downBtn.className = 'row-delete-btn';
+        downBtn.textContent = '▼';
+        downBtn.disabled = index === docs.length - 1;
+        downBtn.addEventListener('click', () => swapOrder(docs, index, index + 1));
+
+        orderCell.appendChild(firstBtn);
+        orderCell.appendChild(upBtn);
+        orderCell.appendChild(downBtn);
 
         const thumbCell = document.createElement('td');
         const img = document.createElement('img');
@@ -1223,6 +1274,7 @@
         });
         actionsCell.appendChild(deleteBtn);
 
+        row.appendChild(orderCell);
         row.appendChild(thumbCell);
         row.appendChild(captionCell);
         row.appendChild(actionsCell);
@@ -1230,8 +1282,29 @@
       });
     }).catch(err => {
       console.error('Erreur lecture photos :', err);
-      photoTable.innerHTML = '<tr><td colspan="3" style="color:var(--text-muted);">Erreur de chargement.</td></tr>';
+      photoTable.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);">Erreur de chargement.</td></tr>';
     });
+  }
+
+  // Échange la position (le champ "order") de deux photos adjacentes
+  function swapOrder(docs, i, j){
+    const a = docs[i], b = docs[j];
+    const orderA = a.data().order ?? i;
+    const orderB = b.data().order ?? j;
+    Promise.all([
+      db.collection('photos').doc(a.id).update({ order: orderB }),
+      db.collection('photos').doc(b.id).update({ order: orderA })
+    ]).then(loadPhotosData).catch(err => console.error('Erreur réordonnancement :', err));
+  }
+
+  // Place une photo en toute première position (décale les autres d'un cran)
+  function moveToFirst(docs, index){
+    const moved = docs[index];
+    const batch = db.batch();
+    // La photo choisie prend l'ordre le plus bas possible
+    const newFirstOrder = (docs[0].data().order ?? 0) - 1;
+    batch.update(db.collection('photos').doc(moved.id), { order: newFirstOrder });
+    batch.commit().then(loadPhotosData).catch(err => console.error('Erreur déplacement :', err));
   }
 
   addPhotoForm.addEventListener('submit', (e) => {
@@ -1243,10 +1316,15 @@
     const submitBtn = addPhotoForm.querySelector('.admin-submit');
     submitBtn.textContent = 'Ajout…';
 
-    db.collection('photos').add({
-      url,
-      caption,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    // La nouvelle photo est placée en dernière position par défaut
+    db.collection('photos').orderBy('order', 'desc').limit(1).get().then(snap => {
+      const lastOrder = snap.empty ? 0 : (snap.docs[0].data().order ?? 0);
+      return db.collection('photos').add({
+        url,
+        caption,
+        order: lastOrder + 1,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
     }).then(() => {
       addPhotoMsg.textContent = 'Photo ajoutée — elle est déjà visible sur la page Photographie.';
       addPhotoMsg.style.color = 'var(--text-muted)';

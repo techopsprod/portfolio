@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rodrigue Corpechot — Techops — Monteur Vidéo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://firestore.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -290,20 +291,24 @@
 
 .photo-gallery{ padding:70px 0 100px; }
 .photo-grid{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:14px;
+  column-count: 3;
+  column-gap: 14px;
 }
-@media (max-width:860px){ .photo-grid{ grid-template-columns:repeat(2,1fr); } }
-@media (max-width:560px){ .photo-grid{ grid-template-columns:1fr; } }
+@media (max-width:860px){ .photo-grid{ column-count: 2; } }
+@media (max-width:560px){ .photo-grid{ column-count: 1; } }
 
 .photo-item{
   position:relative;
-  aspect-ratio:4/5;
   overflow:hidden;
+  break-inside: avoid;
+  margin-bottom: 14px;
   background:repeating-linear-gradient(135deg, #20242C 0 2px, #23272F 2px 4px);
 }
-.photo-item.wide{ aspect-ratio:16/10; }
+.photo-item img{
+  width:100%;
+  height:auto;
+  display:block;
+}
 .photo-item .photo-label{
   position:absolute; bottom:0; left:0; right:0;
   padding:14px 16px;
@@ -890,12 +895,8 @@
       </div>
       <p class="portfolio-sub">Sélection de projets classés par catégorie — cliquer pour lire le montage.</p>
 
-      <div class="filters">
+      <div class="filters" id="filters">
         <button class="filter active" data-filter="all">Tout</button>
-        <button class="filter" data-filter="ba">Bandes-annonces</button>
-        <button class="filter" data-filter="fiction">Fiction</button>
-        <button class="filter" data-filter="cause">Films de cause</button>
-        <button class="filter" data-filter="pub">Pub</button>
       </div>
 
       <div class="grid" id="grid">
@@ -989,8 +990,7 @@
   }
   setInterval(tick, 40);
 
-  // Filtres portfolio (fonctionnent sur les cartes, générées dynamiquement plus bas)
-  const filters = document.querySelectorAll('.filter');
+  // Filtres portfolio (générés dynamiquement à partir des catégories réellement utilisées)
   function applyActiveFilter(){
     const active = document.querySelector('.filter.active');
     const f = active ? active.dataset.filter : 'all';
@@ -998,13 +998,28 @@
       c.style.display = (f === 'all' || c.dataset.cat === f) ? 'flex' : 'none';
     });
   }
-  filters.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filters.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      applyActiveFilter();
+  function bindFilterClicks(){
+    document.querySelectorAll('.filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyActiveFilter();
+      });
     });
-  });
+  }
+  function buildFilters(categoryPairs){
+    // categoryPairs : tableau de [slug, label], sans doublons
+    const container = document.getElementById('filters');
+    container.innerHTML = '<button class="filter active" data-filter="all">Tout</button>';
+    categoryPairs.forEach(([slug, label]) => {
+      const btn = document.createElement('button');
+      btn.className = 'filter';
+      btn.dataset.filter = slug;
+      btn.textContent = label;
+      container.appendChild(btn);
+    });
+    bindFilterClicks();
+  }
 
   // Lecteur vidéo en lightbox (YouTube, en mode "Non répertorié")
   const lightbox = document.getElementById('lightbox');
@@ -1058,6 +1073,9 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+  db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+    console.warn('Cache local Firestore non disponible :', err.code);
+  });
 
   const categoryLabels = {
     ba: 'Bande-annonce',
@@ -1066,15 +1084,26 @@
     pub: 'Pub'
   };
 
-  // Charge les projets réels depuis Firestore et construit les cartes
+  // Charge les projets réels depuis Firestore et construit les cartes + les filtres
   db.collection('videos').orderBy('createdAt', 'desc').get().then(snapshot => {
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
 
     if(snapshot.empty){
       grid.innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;">De nouveaux projets arrivent bientôt.</p>';
+      buildFilters([]);
       return;
     }
+
+    // Construit la liste des catégories réellement utilisées (dans l'ordre de première apparition)
+    const seen = new Map();
+    snapshot.forEach(doc => {
+      const v = doc.data();
+      if(v.category && !seen.has(v.category)){
+        seen.set(v.category, v.categoryLabel || categoryLabels[v.category] || v.category);
+      }
+    });
+    buildFilters([...seen.entries()]);
 
     let n = snapshot.size;
     snapshot.forEach(doc => {

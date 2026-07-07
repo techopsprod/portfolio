@@ -3,19 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Photographie — Rodrigue Corpechot</title>
-<meta name="description" content="Photographie — un autre regard sur l'image, par Rodrigue Corpechot (Techops).">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Photographie — Rodrigue Corpechot">
-<meta property="og:description" content="Un autre regard sur l'image, en dehors du banc de montage.">
-<meta property="og:image" content="https://techopsprod.github.io/og-image.jpg">
-<meta property="og:url" content="https://techopsprod.github.io/photographie.html">
-<meta name="twitter:card" content="summary_large_image">
+<title>Page introuvable — Rodrigue Corpechot</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://firestore.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -581,6 +573,29 @@
   background:var(--surface-2);
 }
 
+
+.error-page{
+  min-height:70vh;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center;
+  padding:60px 24px;
+}
+.error-code{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.85rem;
+  letter-spacing:0.1em;
+  color:var(--accent);
+  margin-bottom:18px;
+}
+.error-page h1{
+  font-size:clamp(2.2rem, 6vw, 3.6rem);
+  margin-bottom:20px;
+}
+.error-page p{
+  color:var(--text-dim);
+  max-width:460px;
+  margin:0 auto 34px;
+}
 </style>
 </head>
 <body>
@@ -870,19 +885,12 @@
 </header>
 
 <main>
-  <section class="photo-hero">
-    <div class="wrap">
-      <div class="eyebrow">À côté du montage</div>
-      <h1>Photographie</h1>
-      <p>Un autre regard sur l'image, en dehors du banc de montage. Quelques photos prises au fil des projets et des déplacements.</p>
-    </div>
-  </section>
-
-  <section class="photo-gallery">
-    <div class="wrap">
-      <div id="photoAlbums">
-        <p class="portfolio-sub">Chargement…</p>
-      </div>
+  <section class="error-page">
+    <div class="wrap" style="width:100%;">
+      <div class="error-code">ERREUR 404 — TIMECODE INTROUVABLE</div>
+      <h1>Cette page n'existe pas.</h1>
+      <p>Le lien suivi est incorrect ou la page a été déplacée. Retour au montage principal :</p>
+      <a href="index.html" class="btn btn-primary">Retour à l'accueil</a>
     </div>
   </section>
 </main>
@@ -893,75 +901,6 @@
     <span>Monteur vidéo — Intermittent du spectacle</span>
   </div>
 </footer>
-
-<!-- Firebase — chargement des photos réelles -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBp3mXXt3iud7VPr5YEz7TLg1ar0cd6AT4",
-    authDomain: "techopsprod-portfolio.firebaseapp.com",
-    projectId: "techopsprod-portfolio",
-    storageBucket: "techopsprod-portfolio.firebasestorage.app",
-    messagingSenderId: "529098449886",
-    appId: "1:529098449886:web:302685cfc44c7dab65734f"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-    console.warn('Cache local Firestore non disponible :', err.code);
-  });
-
-  db.collection('photos').orderBy('order', 'asc').get().then(snapshot => {
-    const container = document.getElementById('photoAlbums');
-    container.innerHTML = '';
-    if(snapshot.empty){
-      container.innerHTML = '<p class="portfolio-sub">De nouvelles photos arrivent bientôt.</p>';
-      return;
-    }
-
-    // Regroupe les photos par légende identique (= même "nom" = même album),
-    // en conservant l'ordre d'apparition défini dans l'admin.
-    const albumOrder = [];
-    const albums = new Map();
-    snapshot.forEach(doc => {
-      const p = doc.data();
-      const key = (p.caption || '').trim();
-      if(!albums.has(key)){
-        albums.set(key, []);
-        albumOrder.push(key);
-      }
-      albums.get(key).push(p);
-    });
-
-    albumOrder.forEach(key => {
-      const photos = albums.get(key);
-      const block = document.createElement('div');
-      block.className = 'photo-album';
-
-      if(key){
-        const title = document.createElement('h2');
-        title.className = 'photo-album-title';
-        title.textContent = key;
-        block.appendChild(title);
-      }
-
-      const grid = document.createElement('div');
-      grid.className = 'photo-grid';
-      photos.forEach(p => {
-        const item = document.createElement('div');
-        item.className = 'photo-item';
-        item.innerHTML = `<img src="${p.url}" alt="${p.caption || ''}" loading="lazy">`;
-        grid.appendChild(item);
-      });
-      block.appendChild(grid);
-      container.appendChild(block);
-    });
-  }).catch(err => {
-    console.error('Erreur chargement photos :', err);
-    document.getElementById('photoAlbums').innerHTML = '<p class="portfolio-sub">Impossible de charger les photos pour le moment.</p>';
-  });
-</script>
 
 <script>
   function pad(n){ return n.toString().padStart(2,'0'); }

@@ -290,6 +290,18 @@
 .photo-hero p{ max-width:560px; margin-top:22px; color:var(--text-dim); font-size:1.02rem; }
 
 .photo-gallery{ padding:70px 0 100px; }
+.photo-album{ margin-bottom:56px; }
+.photo-album:last-child{ margin-bottom:0; }
+.photo-album-title{
+  font-family:'Barlow Condensed', sans-serif;
+  font-size:1.4rem;
+  text-transform:uppercase;
+  letter-spacing:0.02em;
+  color:var(--text);
+  margin-bottom:20px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--line);
+}
 .photo-grid{
   column-count: 3;
   column-gap: 14px;
@@ -858,8 +870,8 @@
 
   <section class="photo-gallery">
     <div class="wrap">
-      <div class="photo-grid" id="photoGrid">
-        <p class="portfolio-sub" style="grid-column:1/-1;">Chargement…</p>
+      <div id="photoAlbums">
+        <p class="portfolio-sub">Chargement…</p>
       </div>
     </div>
   </section>
@@ -891,24 +903,53 @@
   });
 
   db.collection('photos').orderBy('order', 'asc').get().then(snapshot => {
-    const grid = document.getElementById('photoGrid');
-    grid.innerHTML = '';
+    const container = document.getElementById('photoAlbums');
+    container.innerHTML = '';
     if(snapshot.empty){
-      grid.innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;">De nouvelles photos arrivent bientôt.</p>';
+      container.innerHTML = '<p class="portfolio-sub">De nouvelles photos arrivent bientôt.</p>';
       return;
     }
+
+    // Regroupe les photos par légende identique (= même "nom" = même album),
+    // en conservant l'ordre d'apparition défini dans l'admin.
+    const albumOrder = [];
+    const albums = new Map();
     snapshot.forEach(doc => {
       const p = doc.data();
-      const item = document.createElement('div');
-      item.className = 'photo-item';
-      item.innerHTML = `
-        <img src="${p.url}" alt="${p.caption || ''}" loading="lazy">
-        <span class="photo-label">${p.caption || ''}</span>`;
-      grid.appendChild(item);
+      const key = (p.caption || '').trim();
+      if(!albums.has(key)){
+        albums.set(key, []);
+        albumOrder.push(key);
+      }
+      albums.get(key).push(p);
+    });
+
+    albumOrder.forEach(key => {
+      const photos = albums.get(key);
+      const block = document.createElement('div');
+      block.className = 'photo-album';
+
+      if(key){
+        const title = document.createElement('h2');
+        title.className = 'photo-album-title';
+        title.textContent = key;
+        block.appendChild(title);
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'photo-grid';
+      photos.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'photo-item';
+        item.innerHTML = `<img src="${p.url}" alt="${p.caption || ''}" loading="lazy">`;
+        grid.appendChild(item);
+      });
+      block.appendChild(grid);
+      container.appendChild(block);
     });
   }).catch(err => {
     console.error('Erreur chargement photos :', err);
-    document.getElementById('photoGrid').innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;">Impossible de charger les photos pour le moment.</p>';
+    document.getElementById('photoAlbums').innerHTML = '<p class="portfolio-sub">Impossible de charger les photos pour le moment.</p>';
   });
 </script>
 

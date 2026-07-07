@@ -949,6 +949,8 @@
       </form>
       <p class="admin-note" id="addPhotoMsg">&nbsp;</p>
 
+      <button type="button" class="row-delete-btn" id="repairPhotosBtn" style="margin-bottom:24px;">Récupérer les anciennes photos</button>
+
       <table class="video-stats-table" id="photoTable">
         <thead>
           <tr>
@@ -1306,6 +1308,40 @@
     batch.update(db.collection('photos').doc(moved.id), { order: newFirstOrder });
     batch.commit().then(loadPhotosData).catch(err => console.error('Erreur déplacement :', err));
   }
+
+  // Répare les photos ajoutées avant la mise en place du champ "order"
+  // (Firestore exclut silencieusement des tris les documents qui n'ont pas le champ trié)
+  document.getElementById('repairPhotosBtn').addEventListener('click', () => {
+    const btn = document.getElementById('repairPhotosBtn');
+    btn.textContent = 'Recherche en cours…';
+    db.collection('photos').get().then(snapshot => {
+      let maxOrder = 0;
+      snapshot.forEach(doc => {
+        const order = doc.data().order;
+        if(typeof order === 'number' && order > maxOrder) maxOrder = order;
+      });
+
+      const toFix = snapshot.docs.filter(doc => typeof doc.data().order !== 'number');
+      if(toFix.length === 0){
+        alert('Aucune photo à récupérer — tout est déjà en ordre.');
+        btn.textContent = 'Récupérer les anciennes photos';
+        return;
+      }
+
+      const batch = db.batch();
+      toFix.forEach(doc => {
+        maxOrder++;
+        batch.update(doc.ref, { order: maxOrder });
+      });
+      batch.commit().then(() => {
+        alert(toFix.length + ' photo(s) restaurée(s) avec succès.');
+        loadPhotosData();
+      }).catch(err => {
+        console.error('Erreur réparation photos :', err);
+        alert('Une erreur est survenue, réessaie.');
+      }).finally(() => { btn.textContent = 'Récupérer les anciennes photos'; });
+    });
+  });
 
   addPhotoForm.addEventListener('submit', (e) => {
     e.preventDefault();

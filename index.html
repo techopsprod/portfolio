@@ -625,6 +625,40 @@
   background:var(--surface-2);
 }
 
+/* ---------- PROVENANCE DES VISITES (admin) ---------- */
+.source-row{
+  display:grid;
+  grid-template-columns:140px 1fr 60px;
+  align-items:center;
+  gap:16px;
+  padding:10px 0;
+  border-bottom:1px solid var(--line);
+}
+.source-row:last-child{ border-bottom:none; }
+.source-name{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.75rem;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+}
+.source-bar-track{
+  height:8px;
+  background:var(--surface-2);
+  position:relative;
+  overflow:hidden;
+}
+.source-bar-fill{
+  position:absolute; left:0; top:0; height:100%;
+  background:var(--accent);
+}
+.source-count{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.8rem;
+  color:var(--text);
+  text-align:right;
+}
+
 </style>
 </head>
 <body>
@@ -1020,7 +1054,6 @@
         </div>
         <div class="contact-links">
           <a href="mailto:Techops.contact@gmail.com"><span data-i18n="contact.email">Email</span> <span>→</span></a>
-          <a href="tel:0600000000"><span data-i18n="contact.phone">Téléphone</span> <span>→</span></a>
           <a href="https://instagram.com/Techops_prod">Instagram — @Techops_prod <span>→</span></a>
           <a href="https://www.linkedin.com/in/rodrigue-corpechot">LinkedIn — Rodrigue Corpechot <span>→</span></a>
           <a href="https://www.youtube.com/@techops_prod">YouTube <span>→</span></a>
@@ -1340,6 +1373,29 @@
     { count: firebase.firestore.FieldValue.increment(1) },
     { merge: true }
   ).catch(err => console.error('Erreur compteur de visites :', err));
+
+  // Provenance des visites — lit ?utm_source=... dans le lien partagé (ex: ?utm_source=qrcode)
+  // et se rabat sur le site d'origine (referrer) si aucun paramètre n'est présent.
+  (function trackSource(){
+    const params = new URLSearchParams(window.location.search);
+    let raw = params.get('utm_source');
+
+    if(!raw && document.referrer){
+      try {
+        const refHost = new URL(document.referrer).hostname.replace(/^www\./, '');
+        if(refHost && refHost !== window.location.hostname){
+          raw = refHost;
+        }
+      } catch(e){ /* referrer illisible, on ignore */ }
+    }
+
+    const source = (raw || 'direct').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'direct';
+
+    db.collection('stats').doc('sources').set(
+      { [source]: firebase.firestore.FieldValue.increment(1) },
+      { merge: true }
+    ).catch(err => console.error('Erreur stats de provenance :', err));
+  })();
 </script>
 
 </body>

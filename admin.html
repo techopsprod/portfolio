@@ -86,6 +86,7 @@
     display:flex; align-items:center; justify-content:space-between;
     padding:18px 32px;
     max-width:1140px; margin:0 auto;
+    position:relative;
   }
   .nav-id{ display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; cursor:pointer; }
   .nav-id .mark{
@@ -110,6 +111,49 @@
     animation:blink 1.6s infinite;
   }
   @keyframes blink{ 0%,45%{opacity:1;} 50%,95%{opacity:0.25;} 100%{opacity:1;} }
+
+  /* ---------- MENU HAMBURGER (MOBILE UNIQUEMENT) ---------- */
+  .nav-toggle{
+    display:none;
+    width:38px; height:38px;
+    background:transparent;
+    border:1px solid var(--line);
+    cursor:pointer;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    flex-shrink:0;
+  }
+  .nav-toggle span{
+    display:block; width:18px; height:2px; background:var(--text);
+    transition:.2s;
+  }
+  .nav-toggle.active span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  .nav-toggle.active span:nth-child(2){ opacity:0; }
+  .nav-toggle.active span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  @media (max-width:800px){
+    .nav-links{
+      display:none;
+      position:absolute;
+      top:100%; left:0; right:0;
+      flex-direction:column;
+      align-items:stretch;
+      gap:0;
+      background:var(--bg);
+      border-bottom:1px solid var(--line);
+      padding:8px 32px 18px;
+      box-shadow:0 12px 24px rgba(0,0,0,0.35);
+    }
+    .nav-links.open{ display:flex; }
+    .nav-links a{
+      padding:14px 0;
+      border-bottom:1px solid var(--line);
+      width:100%;
+    }
+    .nav-toggle{ display:flex; }
+  }
 
   /* ---------- HERO ---------- */
   .hero{
@@ -574,6 +618,40 @@
   background:var(--surface-2);
 }
 
+/* ---------- PROVENANCE DES VISITES (admin) ---------- */
+.source-row{
+  display:grid;
+  grid-template-columns:140px 1fr 60px;
+  align-items:center;
+  gap:16px;
+  padding:10px 0;
+  border-bottom:1px solid var(--line);
+}
+.source-row:last-child{ border-bottom:none; }
+.source-name{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.75rem;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  color:var(--text-dim);
+}
+.source-bar-track{
+  height:8px;
+  background:var(--surface-2);
+  position:relative;
+  overflow:hidden;
+}
+.source-bar-fill{
+  position:absolute; left:0; top:0; height:100%;
+  background:var(--accent);
+}
+.source-count{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.8rem;
+  color:var(--text);
+  text-align:right;
+}
+
 </style>
 </head>
 <body>
@@ -881,7 +959,10 @@
     <div class="wrap">
       <div class="admin-topbar">
         <h1>Tableau de bord</h1>
-        <button class="admin-logout" id="logoutBtn">Se déconnecter</button>
+        <div style="display:flex; gap:10px;">
+          <button class="admin-logout" id="backupBtn">Télécharger une sauvegarde</button>
+          <button class="admin-logout" id="logoutBtn">Se déconnecter</button>
+        </div>
       </div>
 
       <p class="admin-note" id="youtubeApiError" style="display:none; color:var(--accent); border:1px solid var(--accent-dim); padding:12px 16px; margin-bottom:24px;">&nbsp;</p>
@@ -902,6 +983,12 @@
           <div class="stat-value" id="statVideoCount">—</div>
           <div class="stat-delta" id="statVideoDelta">&nbsp;</div>
         </div>
+      </div>
+
+      <h2 class="admin-section-title">Provenance des visites</h2>
+      <p class="admin-note" style="margin-top:0; margin-bottom:18px;">Ajoute <code>?src=nom</code> à la fin d'un lien pour savoir d'où viennent tes visiteurs — ex : QR code du CV → <code>https://techopsprod.github.io/?src=qr</code>, LinkedIn → <code>?src=linkedin</code>, Instagram → <code>?src=instagram</code>. Un lien partagé sans ce paramètre est comptabilisé en "direct".</p>
+      <div id="sourceStats" style="margin-bottom:56px;">
+        <p style="color:var(--text-muted); font-family:'IBM Plex Mono', monospace; font-size:0.8rem;">Chargement…</p>
       </div>
 
       <h2 class="admin-section-title">Ajouter une vidéo</h2>
@@ -979,6 +1066,19 @@
           <tr><td colspan="4" style="color:var(--text-muted);">Chargement…</td></tr>
         </tbody>
       </table>
+
+      <h2 class="admin-section-title" style="margin-top:56px;">Provenance des visites</h2>
+      <p class="admin-note" style="margin-top:0; margin-bottom:18px;">D'où viennent tes visiteurs (QR code, LinkedIn, Instagram...). Pour des données précises, ajoute <span style="color:var(--text-dim);">?utm_source=qrcode</span> (ou linkedin, instagram, cv…) à la fin des liens que tu partages.</p>
+      <div id="sourcesStats"><p style="color:var(--text-muted); font-size:0.88rem;">Chargement…</p></div>
+
+      <h2 class="admin-section-title" style="margin-top:56px;">Sauvegarde des données</h2>
+      <p class="admin-note" style="margin-top:0; margin-bottom:18px;">Télécharge une copie de tes vidéos et photos de temps en temps, pour ne jamais rien perdre. En cas de souci, le fichier permet de tout restaurer.</p>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <button type="button" class="admin-submit" id="exportDataBtn" style="width:auto; padding:13px 22px;">Exporter mes données</button>
+        <button type="button" class="row-delete-btn" id="importDataBtn">Restaurer une sauvegarde</button>
+        <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+      </div>
+      <p class="admin-note" id="backupMsg">&nbsp;</p>
     </div>
   </section>
 </main>
@@ -1101,6 +1201,31 @@
       document.getElementById('statVisits').textContent = count.toLocaleString('fr-FR');
     }).catch(err => console.error('Erreur lecture visites :', err));
 
+    // Provenance des visites (paramètre ?src= des liens partagés)
+    db.collection('stats').doc('sources').get().then(doc => {
+      const container = document.getElementById('sourceStats');
+      const data = doc.exists ? doc.data() : {};
+      const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
+
+      if(entries.length === 0){
+        container.innerHTML = '<p style="color:var(--text-muted); font-family:\'IBM Plex Mono\', monospace; font-size:0.8rem;">Pas encore de données.</p>';
+        return;
+      }
+
+      const max = entries[0][1];
+      container.innerHTML = '';
+      entries.forEach(([name, count]) => {
+        const row = document.createElement('div');
+        row.className = 'source-row';
+        const pct = max > 0 ? Math.round((count / max) * 100) : 0;
+        row.innerHTML = `
+          <div class="source-name">${name}</div>
+          <div class="source-bar-track"><div class="source-bar-fill" style="width:${pct}%"></div></div>
+          <div class="source-count">${count.toLocaleString('fr-FR')}</div>`;
+        container.appendChild(row);
+      });
+    }).catch(err => console.error('Erreur lecture provenance :', err));
+
     // Liste des vidéos + leurs vues YouTube
     db.collection('videos').orderBy('createdAt', 'desc').get().then(snapshot => {
       document.getElementById('statVideoCount').textContent = snapshot.size;
@@ -1218,6 +1343,147 @@
 
   document.getElementById('videoCategory').addEventListener('change', (e) => {
     document.getElementById('newCategoryField').classList.toggle('visible', e.target.value === '__new__');
+  });
+
+  // Provenance des visites (QR code, LinkedIn, Instagram, direct...)
+  const sourceLabels = {
+    direct: 'Direct / QR code',
+    qrcode: 'QR code (CV)',
+    linkedin: 'LinkedIn',
+    linkedin_com: 'LinkedIn',
+    instagram: 'Instagram',
+    instagram_com: 'Instagram',
+    cv: 'CV (lien)',
+    youtube_com: 'YouTube',
+    m_youtube_com: 'YouTube',
+    google_com: 'Recherche Google'
+  };
+
+  function formatSourceName(source){
+    return sourceLabels[source] || source.replace(/_/g, '.');
+  }
+
+  function loadSourcesData(){
+    db.collection('stats').doc('sources').get().then(doc => {
+      const container = document.getElementById('sourcesStats');
+      container.innerHTML = '';
+      const data = doc.exists ? doc.data() : {};
+      const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
+      if(entries.length === 0){
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:0.88rem;">Pas encore de données.</p>';
+        return;
+      }
+      const max = entries[0][1] || 1;
+      entries.forEach(([source, count]) => {
+        const row = document.createElement('div');
+        row.className = 'skill-row';
+        row.innerHTML = `
+          <div class="skill-top"><span class="skill-name">${formatSourceName(source)}</span><span class="skill-level">${count}</span></div>
+          <div class="gauge"><span style="width:${Math.round((count / max) * 100)}%"></span></div>`;
+        container.appendChild(row);
+      });
+    }).catch(err => {
+      console.error('Erreur lecture provenance :', err);
+      document.getElementById('sourcesStats').innerHTML = '<p style="color:var(--text-muted); font-size:0.88rem;">Erreur de chargement.</p>';
+    });
+  }
+
+  // Export / restauration des données (sauvegarde manuelle)
+  document.getElementById('exportDataBtn').addEventListener('click', () => {
+    const backupMsg = document.getElementById('backupMsg');
+    backupMsg.textContent = 'Préparation du fichier…';
+    backupMsg.style.color = 'var(--text-muted)';
+
+    Promise.all([
+      db.collection('videos').get(),
+      db.collection('photos').get()
+    ]).then(([videosSnap, photosSnap]) => {
+      const data = {
+        exportedAt: new Date().toISOString(),
+        videos: videosSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+        photos: photosSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+      };
+      const json = JSON.stringify(data, (key, value) => {
+        if(value && typeof value === 'object' && typeof value.toDate === 'function'){
+          return value.toDate().toISOString();
+        }
+        return value;
+      }, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sauvegarde-techops-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      backupMsg.textContent = `Sauvegarde téléchargée — ${data.videos.length} vidéo(s), ${data.photos.length} photo(s).`;
+      backupMsg.style.color = 'var(--text-muted)';
+    }).catch(err => {
+      console.error('Erreur export :', err);
+      backupMsg.textContent = "Erreur lors de l'export.";
+      backupMsg.style.color = 'var(--accent)';
+    });
+  });
+
+  document.getElementById('importDataBtn').addEventListener('click', () => {
+    document.getElementById('importFileInput').click();
+  });
+
+  document.getElementById('importFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const backupMsg = document.getElementById('backupMsg');
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      let data;
+      try {
+        data = JSON.parse(evt.target.result);
+      } catch(err){
+        backupMsg.textContent = 'Fichier invalide — ce n\'est pas une sauvegarde valide.';
+        backupMsg.style.color = 'var(--accent)';
+        return;
+      }
+
+      const videoCount = (data.videos || []).length;
+      const photoCount = (data.photos || []).length;
+      if(!confirm(`Restaurer ${videoCount} vidéo(s) et ${photoCount} photo(s) depuis cette sauvegarde ?\n\nLes projets déjà en ligne avec le même identifiant seront écrasés par la version sauvegardée.`)){
+        return;
+      }
+
+      const batch = db.batch();
+      (data.videos || []).forEach(v => {
+        const { id, ...fields } = v;
+        if(fields.createdAt){
+          fields.createdAt = firebase.firestore.Timestamp.fromDate(new Date(fields.createdAt));
+        }
+        const ref = id ? db.collection('videos').doc(id) : db.collection('videos').doc();
+        batch.set(ref, fields, { merge: true });
+      });
+      (data.photos || []).forEach(p => {
+        const { id, ...fields } = p;
+        if(fields.createdAt){
+          fields.createdAt = firebase.firestore.Timestamp.fromDate(new Date(fields.createdAt));
+        }
+        const ref = id ? db.collection('photos').doc(id) : db.collection('photos').doc();
+        batch.set(ref, fields, { merge: true });
+      });
+
+      batch.commit().then(() => {
+        backupMsg.textContent = 'Sauvegarde restaurée avec succès.';
+        backupMsg.style.color = 'var(--text-muted)';
+        loadDashboardData();
+        loadPhotosData();
+      }).catch(err => {
+        console.error('Erreur restauration :', err);
+        backupMsg.textContent = 'Erreur lors de la restauration.';
+        backupMsg.style.color = 'var(--accent)';
+      });
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   });
 
   function loadPhotosData(){
@@ -1403,6 +1669,50 @@
       .finally(() => { submitBtn.textContent = 'Se connecter'; });
   });
 
+  // Sauvegarde : exporte toutes les données Firebase (vidéos, photos, stats) en un fichier JSON téléchargeable
+  document.getElementById('backupBtn').addEventListener('click', () => {
+    const btn = document.getElementById('backupBtn');
+    btn.textContent = 'Préparation…';
+
+    Promise.all([
+      db.collection('videos').get(),
+      db.collection('photos').get(),
+      db.collection('stats').get()
+    ]).then(([videosSnap, photosSnap, statsSnap]) => {
+      const toPlainData = doc => {
+        const data = doc.data();
+        // Convertit les timestamps Firestore en texte lisible pour le fichier de sauvegarde
+        Object.keys(data).forEach(key => {
+          if(data[key] && typeof data[key].toDate === 'function'){
+            data[key] = data[key].toDate().toISOString();
+          }
+        });
+        return { id: doc.id, ...data };
+      };
+
+      const backup = {
+        exportedAt: new Date().toISOString(),
+        videos: videosSnap.docs.map(toPlainData),
+        photos: photosSnap.docs.map(toPlainData),
+        stats: statsSnap.docs.map(toPlainData)
+      };
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const dateStr = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `sauvegarde-portfolio-${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }).catch(err => {
+      console.error('Erreur sauvegarde :', err);
+      alert('Erreur lors de la préparation de la sauvegarde, réessaie.');
+    }).finally(() => { btn.textContent = 'Télécharger une sauvegarde'; });
+  });
+
   logoutBtn.addEventListener('click', () => {
     auth.signOut();
   });
@@ -1414,6 +1724,7 @@
       dashboard.classList.add('visible');
       loadDashboardData();
       loadPhotosData();
+      loadSourcesData();
     } else {
       gateScreen.style.display = 'flex';
       dashboard.classList.remove('visible');

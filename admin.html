@@ -618,40 +618,6 @@
   background:var(--surface-2);
 }
 
-/* ---------- PROVENANCE DES VISITES (admin) ---------- */
-.source-row{
-  display:grid;
-  grid-template-columns:140px 1fr 60px;
-  align-items:center;
-  gap:16px;
-  padding:10px 0;
-  border-bottom:1px solid var(--line);
-}
-.source-row:last-child{ border-bottom:none; }
-.source-name{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:0.75rem;
-  letter-spacing:0.04em;
-  text-transform:uppercase;
-  color:var(--text-dim);
-}
-.source-bar-track{
-  height:8px;
-  background:var(--surface-2);
-  position:relative;
-  overflow:hidden;
-}
-.source-bar-fill{
-  position:absolute; left:0; top:0; height:100%;
-  background:var(--accent);
-}
-.source-count{
-  font-family:'IBM Plex Mono', monospace;
-  font-size:0.8rem;
-  color:var(--text);
-  text-align:right;
-}
-
 </style>
 </head>
 <body>
@@ -985,12 +951,6 @@
         </div>
       </div>
 
-      <h2 class="admin-section-title">Provenance des visites</h2>
-      <p class="admin-note" style="margin-top:0; margin-bottom:18px;">Ajoute <code>?src=nom</code> à la fin d'un lien pour savoir d'où viennent tes visiteurs — ex : QR code du CV → <code>https://techopsprod.github.io/?src=qr</code>, LinkedIn → <code>?src=linkedin</code>, Instagram → <code>?src=instagram</code>. Un lien partagé sans ce paramètre est comptabilisé en "direct".</p>
-      <div id="sourceStats" style="margin-bottom:56px;">
-        <p style="color:var(--text-muted); font-family:'IBM Plex Mono', monospace; font-size:0.8rem;">Chargement…</p>
-      </div>
-
       <h2 class="admin-section-title">Ajouter une vidéo</h2>
       <form class="add-video-form" id="addVideoForm" style="display:block;">
         <div style="display:grid; grid-template-columns:2fr 1.4fr 1fr auto; gap:14px; align-items:end;">
@@ -1200,31 +1160,6 @@
       const count = doc.exists ? (doc.data().count || 0) : 0;
       document.getElementById('statVisits').textContent = count.toLocaleString('fr-FR');
     }).catch(err => console.error('Erreur lecture visites :', err));
-
-    // Provenance des visites (paramètre ?src= des liens partagés)
-    db.collection('stats').doc('sources').get().then(doc => {
-      const container = document.getElementById('sourceStats');
-      const data = doc.exists ? doc.data() : {};
-      const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
-
-      if(entries.length === 0){
-        container.innerHTML = '<p style="color:var(--text-muted); font-family:\'IBM Plex Mono\', monospace; font-size:0.8rem;">Pas encore de données.</p>';
-        return;
-      }
-
-      const max = entries[0][1];
-      container.innerHTML = '';
-      entries.forEach(([name, count]) => {
-        const row = document.createElement('div');
-        row.className = 'source-row';
-        const pct = max > 0 ? Math.round((count / max) * 100) : 0;
-        row.innerHTML = `
-          <div class="source-name">${name}</div>
-          <div class="source-bar-track"><div class="source-bar-fill" style="width:${pct}%"></div></div>
-          <div class="source-count">${count.toLocaleString('fr-FR')}</div>`;
-        container.appendChild(row);
-      });
-    }).catch(err => console.error('Erreur lecture provenance :', err));
 
     // Liste des vidéos + leurs vues YouTube
     db.collection('videos').orderBy('createdAt', 'desc').get().then(snapshot => {

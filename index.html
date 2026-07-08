@@ -93,6 +93,7 @@
     display:flex; align-items:center; justify-content:space-between;
     padding:18px 32px;
     max-width:1140px; margin:0 auto;
+    position:relative;
   }
   .nav-id{ display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; cursor:pointer; }
   .nav-id .mark{
@@ -117,6 +118,49 @@
     animation:blink 1.6s infinite;
   }
   @keyframes blink{ 0%,45%{opacity:1;} 50%,95%{opacity:0.25;} 100%{opacity:1;} }
+
+  /* ---------- MENU HAMBURGER (MOBILE UNIQUEMENT) ---------- */
+  .nav-toggle{
+    display:none;
+    width:38px; height:38px;
+    background:transparent;
+    border:1px solid var(--line);
+    cursor:pointer;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    flex-shrink:0;
+  }
+  .nav-toggle span{
+    display:block; width:18px; height:2px; background:var(--text);
+    transition:.2s;
+  }
+  .nav-toggle.active span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  .nav-toggle.active span:nth-child(2){ opacity:0; }
+  .nav-toggle.active span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  @media (max-width:800px){
+    .nav-links{
+      display:none;
+      position:absolute;
+      top:100%; left:0; right:0;
+      flex-direction:column;
+      align-items:stretch;
+      gap:0;
+      background:var(--bg);
+      border-bottom:1px solid var(--line);
+      padding:8px 32px 18px;
+      box-shadow:0 12px 24px rgba(0,0,0,0.35);
+    }
+    .nav-links.open{ display:flex; }
+    .nav-links a{
+      padding:14px 0;
+      border-bottom:1px solid var(--line);
+      width:100%;
+    }
+    .nav-toggle{ display:flex; }
+  }
 
   /* ---------- HERO ---------- */
   .hero{
@@ -856,15 +900,19 @@
   </g>
 </svg>
       <span class="mark">RODRIGUE CORPECHOT</span>
-      <span class="role">TECHOPS — MONTEUR VIDÉO TF1</span>
+      <span class="role" data-i18n="nav.role">TECHOPS — MONTEUR VIDÉO TF1</span>
     </a>
     <nav class="nav-links">
-      <a href="#parcours">Parcours</a>
-      <a href="#portfolio">Montages</a>
-      <a href="#competences">Compétences</a>
-      <a href="photographie.html">Photographie</a>
-      <a href="#contact">Contact</a>
+      <a href="#parcours" data-i18n="nav.parcours">Parcours</a>
+      <a href="#portfolio" data-i18n="nav.montages">Montages</a>
+      <a href="#competences" data-i18n="nav.competences">Compétences</a>
+      <a href="photographie.html" data-i18n="nav.photographie">Photographie</a>
+      <a href="#contact" data-i18n="nav.contact">Contact</a>
+      <a href="#" id="langToggle" style="font-weight:600;">EN</a>
     </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div class="tc"><span class="dot"></span><span id="clock">00:00:00:00</span></div>
   </div>
 </header>
@@ -872,12 +920,12 @@
 <main>
   <section class="hero">
     <div class="wrap">
-      <div class="eyebrow">Rodrigue Corpechot — Techops — Monteur vidéo</div>
-      <h1>Entre rigueur et sensibilité, <span>je façonne le récit.</span></h1>
-      <p>Monteur vidéo depuis un an, en alternance au service Bandes-Annonces de TF1. Avant ça, huit années dans l'Armée de Terre qui m'ont donné le goût du travail bien fait et le sens du collectif. Vous trouverez ici mes projets — courts-métrages, films de cause, bandes-annonces télévisées — et un aperçu de ma manière de raconter des histoires en images.</p>
+      <div class="eyebrow" data-i18n="hero.eyebrow">Rodrigue Corpechot — Techops — Monteur vidéo</div>
+      <h1 data-i18n="hero.h1">Entre rigueur et sensibilité, <span>je façonne le récit.</span></h1>
+      <p data-i18n="hero.p">Monteur vidéo depuis un an, en alternance au service Bandes-Annonces de TF1. Avant ça, huit années dans l'Armée de Terre qui m'ont donné le goût du travail bien fait et le sens du collectif. Vous trouverez ici mes projets — courts-métrages, films de cause, bandes-annonces télévisées — et un aperçu de ma manière de raconter des histoires en images.</p>
       <div class="hero-cta">
-        <a href="#portfolio" class="btn btn-primary">Voir les montages</a>
-        <a href="#contact" class="btn btn-ghost">Me contacter</a>
+        <a href="#portfolio" class="btn btn-primary" data-i18n="hero.cta1">Voir les montages</a>
+        <a href="#contact" class="btn btn-ghost" data-i18n="hero.cta2">Me contacter</a>
       </div>
     </div>
   </section>
@@ -885,77 +933,77 @@
   <section class="record" id="parcours">
     <div class="wrap">
       <div class="record-head">
-        <h2>Parcours</h2>
-        <span class="eyebrow">En bref</span>
+        <h2 data-i18n="parcours.title">Parcours</h2>
+        <span class="eyebrow" data-i18n="parcours.eyebrow">En bref</span>
       </div>
       <div class="record-grid">
         <div class="record-cell">
-          <div class="label">Expertise</div>
-          <div class="value">Montage vidéo<br>Bandes-annonces &amp; fiction</div>
+          <div class="label" data-i18n="parcours.label1">Expertise</div>
+          <div class="value" data-i18n="parcours.value1">Montage vidéo<br>Bandes-annonces &amp; fiction</div>
         </div>
         <div class="record-cell">
-          <div class="label">Poste actuel</div>
-          <div class="value">TF1 — Service<br>Bandes-Annonces<br><span style="color:var(--text-muted)">Alternance</span></div>
+          <div class="label" data-i18n="parcours.label2">Poste actuel</div>
+          <div class="value" data-i18n="parcours.value2">TF1 — Service<br>Bandes-Annonces<br><span style="color:var(--text-muted)">Alternance</span></div>
         </div>
         <div class="record-cell">
-          <div class="label">Formation</div>
-          <div class="value">Bachelor Monteur<br>Réalisateur (en cours)<br>BTS Monteur</div>
+          <div class="label" data-i18n="parcours.label3">Formation</div>
+          <div class="value" data-i18n="parcours.value3">Bachelor Monteur<br>Réalisateur (en cours)<br>BTS Monteur</div>
         </div>
         <div class="record-cell">
-          <div class="label">Avant le montage</div>
-          <div class="value">Armée de Terre<br>8 ans de service<br>Reconversion 2023</div>
+          <div class="label" data-i18n="parcours.label4">Avant le montage</div>
+          <div class="value" data-i18n="parcours.value4">Armée de Terre<br>8 ans de service<br>Reconversion 2023</div>
         </div>
       </div>
-      <p class="record-note">Une rigueur acquise ailleurs, aujourd'hui mise au service de l'image. Disponible en intermittence à l'issue de l'alternance.</p>
+      <p class="record-note" data-i18n="parcours.note">Une rigueur acquise ailleurs, aujourd'hui mise au service de l'image. Disponible en intermittence à l'issue de l'alternance.</p>
     </div>
   </section>
 
   <section class="portfolio" id="portfolio">
     <div class="wrap">
       <div class="portfolio-head">
-        <h2>Carnet de montage</h2>
+        <h2 data-i18n="portfolio.title">Carnet de montage</h2>
       </div>
-      <p class="portfolio-sub">Sélection de projets classés par catégorie — cliquer pour lire le montage.</p>
+      <p class="portfolio-sub" data-i18n="portfolio.sub">Sélection de projets classés par catégorie — cliquer pour lire le montage.</p>
 
       <div class="filters" id="filters">
-        <button class="filter active" data-filter="all">Tout</button>
+        <button class="filter active" data-filter="all" data-i18n="filter.all">Tout</button>
       </div>
 
       <div class="grid" id="grid">
-        <p class="portfolio-sub" id="gridLoading" style="grid-column:1/-1;">Chargement des projets…</p>
+        <p class="portfolio-sub" id="gridLoading" style="grid-column:1/-1;" data-i18n="portfolio.loading">Chargement des projets…</p>
       </div>
     </div>
   </section>
 
   <section class="skills" id="competences">
     <div class="wrap">
-      <h2>Compétences techniques</h2>
+      <h2 data-i18n="skills.title">Compétences techniques</h2>
       <div class="skills-grid">
         <div>
           <div class="skill-row">
-            <div class="skill-top"><span class="skill-name">Avid Media Composer</span><span class="skill-level">Expert — TF1</span></div>
+            <div class="skill-top"><span class="skill-name">Avid Media Composer</span><span class="skill-level" data-i18n="skill.level1">Expert — TF1</span></div>
             <div class="gauge"><span style="width:95%"></span></div>
           </div>
           <div class="skill-row">
-            <div class="skill-top"><span class="skill-name">DaVinci Resolve</span><span class="skill-level">Confirmé — projets perso</span></div>
+            <div class="skill-top"><span class="skill-name">DaVinci Resolve</span><span class="skill-level" data-i18n="skill.level2">Confirmé — projets perso</span></div>
             <div class="gauge"><span style="width:80%"></span></div>
           </div>
           <div class="skill-row">
-            <div class="skill-top"><span class="skill-name">Confo / Habillage</span><span class="skill-level">Confirmé — formation TF1</span></div>
+            <div class="skill-top"><span class="skill-name">Confo / Habillage</span><span class="skill-level" data-i18n="skill.level3">Confirmé — formation TF1</span></div>
             <div class="gauge"><span style="width:75%"></span></div>
           </div>
         </div>
         <div>
           <div class="skill-row">
-            <div class="skill-top"><span class="skill-name">Adobe Premiere Pro</span><span class="skill-level">Maîtrisé</span></div>
+            <div class="skill-top"><span class="skill-name">Adobe Premiere Pro</span><span class="skill-level" data-i18n="skill.level4">Maîtrisé</span></div>
             <div class="gauge"><span style="width:65%"></span></div>
           </div>
           <div class="skill-row">
-            <div class="skill-top"><span class="skill-name">After Effects</span><span class="skill-level">Notions</span></div>
+            <div class="skill-top"><span class="skill-name">After Effects</span><span class="skill-level" data-i18n="skill.level5">Notions</span></div>
             <div class="gauge"><span style="width:35%"></span></div>
           </div>
           <div class="skill-row">
-            <div class="skill-top"><span class="skill-name">Illustrator</span><span class="skill-level">Notions</span></div>
+            <div class="skill-top"><span class="skill-name">Illustrator</span><span class="skill-level" data-i18n="skill.level6">Notions</span></div>
             <div class="gauge"><span style="width:30%"></span></div>
           </div>
         </div>
@@ -967,12 +1015,12 @@
     <div class="wrap">
       <div class="contact-inner">
         <div>
-          <h2>Discutons de votre prochain montage.</h2>
-          <div class="contact-status"><span class="dot"></span>Disponible en intermittence — dès septembre 2026</div>
+          <h2 data-i18n="contact.title">Discutons de votre prochain montage.</h2>
+          <div class="contact-status"><span class="dot"></span><span data-i18n="contact.status">Disponible en intermittence — dès septembre 2026</span></div>
         </div>
         <div class="contact-links">
-          <a href="mailto:Techops.contact@gmail.com">Email <span>→</span></a>
-          <a href="tel:0600000000">Téléphone <span>→</span></a>
+          <a href="mailto:Techops.contact@gmail.com"><span data-i18n="contact.email">Email</span> <span>→</span></a>
+          <a href="tel:0600000000"><span data-i18n="contact.phone">Téléphone</span> <span>→</span></a>
           <a href="https://instagram.com/Techops_prod">Instagram — @Techops_prod <span>→</span></a>
           <a href="https://www.linkedin.com/in/rodrigue-corpechot">LinkedIn — Rodrigue Corpechot <span>→</span></a>
           <a href="https://www.youtube.com/@techops_prod">YouTube <span>→</span></a>
@@ -985,7 +1033,7 @@
 <footer>
   <div class="wrap" style="display:flex; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px;">
     <span>© 2026 Rodrigue Corpechot — Techops</span>
-    <span>Monteur vidéo — Intermittent du spectacle</span>
+    <span data-i18n="footer.role">Monteur vidéo — Intermittent du spectacle</span>
   </div>
 </footer>
 
@@ -1000,6 +1048,125 @@
 </div>
 
 <script>
+  // ---------- TRADUCTION FR / EN ----------
+  const translations = {
+    fr: {
+      'nav.role': 'TECHOPS — MONTEUR VIDÉO TF1',
+      'nav.parcours': 'Parcours',
+      'nav.montages': 'Montages',
+      'nav.competences': 'Compétences',
+      'nav.photographie': 'Photographie',
+      'nav.contact': 'Contact',
+      'hero.eyebrow': 'Rodrigue Corpechot — Techops — Monteur vidéo',
+      'hero.h1': 'Entre rigueur et sensibilité, <span>je façonne le récit.</span>',
+      'hero.p': "Monteur vidéo depuis un an, en alternance au service Bandes-Annonces de TF1. Avant ça, huit années dans l'Armée de Terre qui m'ont donné le goût du travail bien fait et le sens du collectif. Vous trouverez ici mes projets — courts-métrages, films de cause, bandes-annonces télévisées — et un aperçu de ma manière de raconter des histoires en images.",
+      'hero.cta1': 'Voir les montages',
+      'hero.cta2': 'Me contacter',
+      'parcours.title': 'Parcours',
+      'parcours.eyebrow': 'En bref',
+      'parcours.label1': 'Expertise',
+      'parcours.value1': 'Montage vidéo<br>Bandes-annonces &amp; fiction',
+      'parcours.label2': 'Poste actuel',
+      'parcours.value2': 'TF1 — Service<br>Bandes-Annonces<br><span style="color:var(--text-muted)">Alternance</span>',
+      'parcours.label3': 'Formation',
+      'parcours.value3': 'Bachelor Monteur<br>Réalisateur (en cours)<br>BTS Monteur',
+      'parcours.label4': 'Avant le montage',
+      'parcours.value4': 'Armée de Terre<br>8 ans de service<br>Reconversion 2023',
+      'parcours.note': "Une rigueur acquise ailleurs, aujourd'hui mise au service de l'image. Disponible en intermittence à l'issue de l'alternance.",
+      'portfolio.title': 'Carnet de montage',
+      'portfolio.sub': 'Sélection de projets classés par catégorie — cliquer pour lire le montage.',
+      'portfolio.loading': 'Chargement des projets…',
+      'portfolio.empty': 'De nouveaux projets arrivent bientôt.',
+      'portfolio.error': 'Impossible de charger les projets pour le moment.',
+      'filter.all': 'Tout',
+      'skills.title': 'Compétences techniques',
+      'skill.level1': 'Expert — TF1',
+      'skill.level2': 'Confirmé — projets perso',
+      'skill.level3': 'Confirmé — formation TF1',
+      'skill.level4': 'Maîtrisé',
+      'skill.level5': 'Notions',
+      'skill.level6': 'Notions',
+      'contact.title': 'Discutons de votre prochain montage.',
+      'contact.status': 'Disponible en intermittence — dès septembre 2026',
+      'contact.email': 'Email',
+      'contact.phone': 'Téléphone',
+      'footer.role': 'Monteur vidéo — Intermittent du spectacle'
+    },
+    en: {
+      'nav.role': 'TECHOPS — VIDEO EDITOR, TF1',
+      'nav.parcours': 'Background',
+      'nav.montages': 'Work',
+      'nav.competences': 'Skills',
+      'nav.photographie': 'Photography',
+      'nav.contact': 'Contact',
+      'hero.eyebrow': 'Rodrigue Corpechot — Techops — Video Editor',
+      'hero.h1': 'Between discipline and sensitivity, <span>I shape the story.</span>',
+      'hero.p': "Video editor for one year now, on a work-study placement with TF1's Trailers department. Before that, eight years in the French Army taught me the value of thorough work and teamwork. Here you'll find my projects — short films, cause-driven films, TV trailers — and a glimpse of how I like to tell stories through images.",
+      'hero.cta1': 'View the work',
+      'hero.cta2': 'Get in touch',
+      'parcours.title': 'Background',
+      'parcours.eyebrow': 'At a glance',
+      'parcours.label1': 'Expertise',
+      'parcours.value1': 'Video editing<br>Trailers &amp; fiction',
+      'parcours.label2': 'Current role',
+      'parcours.value2': 'TF1 — Trailers<br>Department<br><span style="color:var(--text-muted)">Work-study placement</span>',
+      'parcours.label3': 'Education',
+      'parcours.value3': "Bachelor's in Editing<br>&amp; Directing (ongoing)<br>Vocational diploma, editing",
+      'parcours.label4': 'Before editing',
+      'parcours.value4': 'French Army<br>8 years of service<br>Career change, 2023',
+      'parcours.note': 'A discipline learned elsewhere, now put to work in the edit. Available for freelance work once the placement ends.',
+      'portfolio.title': 'Cutting Log',
+      'portfolio.sub': 'A selection of projects sorted by category — click to watch.',
+      'portfolio.loading': 'Loading projects…',
+      'portfolio.empty': 'New projects coming soon.',
+      'portfolio.error': 'Unable to load projects right now.',
+      'filter.all': 'All',
+      'skills.title': 'Technical Skills',
+      'skill.level1': 'Expert — TF1',
+      'skill.level2': 'Proficient — personal projects',
+      'skill.level3': 'Proficient — trained at TF1',
+      'skill.level4': 'Comfortable',
+      'skill.level5': 'Basics',
+      'skill.level6': 'Basics',
+      'contact.title': "Let's talk about your next edit.",
+      'contact.status': 'Available for freelance work — from September 2026',
+      'contact.email': 'Email',
+      'contact.phone': 'Phone',
+      'footer.role': 'Video editor — Freelance'
+    }
+  };
+
+  function t(key){
+    const lang = document.documentElement.lang === 'en' ? 'en' : 'fr';
+    return (translations[lang] && translations[lang][key]) || key;
+  }
+
+  function setLanguage(lang){
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const value = translations[lang][key];
+      if(value !== undefined) el.innerHTML = value;
+    });
+    const toggle = document.getElementById('langToggle');
+    if(toggle) toggle.textContent = lang === 'fr' ? 'EN' : 'FR';
+    localStorage.setItem('site-lang', lang);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('site-lang') || 'fr';
+    setLanguage(saved);
+  });
+
+  const langToggleBtn = document.getElementById('langToggle');
+  if(langToggleBtn){
+    langToggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const current = document.documentElement.lang === 'en' ? 'en' : 'fr';
+      setLanguage(current === 'fr' ? 'en' : 'fr');
+    });
+  }
+
   // Horloge / timecode en continu — signature visuelle liée au métier du montage
   function pad(n){ return n.toString().padStart(2,'0'); }
   let frame = 0;
@@ -1011,6 +1178,20 @@
       pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) + ':' + pad(frame);
   }
   setInterval(tick, 40);
+
+  // Menu hamburger (mobile uniquement)
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.querySelector('.nav-links');
+  navToggle.addEventListener('click', () => {
+    navToggle.classList.toggle('active');
+    navLinks.classList.toggle('open');
+  });
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      navToggle.classList.remove('active');
+      navLinks.classList.remove('open');
+    });
+  });
 
   // Filtres portfolio (générés dynamiquement à partir des catégories réellement utilisées)
   function applyActiveFilter(){
@@ -1032,7 +1213,7 @@
   function buildFilters(categoryPairs){
     // categoryPairs : tableau de [slug, label], sans doublons
     const container = document.getElementById('filters');
-    container.innerHTML = '<button class="filter active" data-filter="all">Tout</button>';
+    container.innerHTML = '<button class="filter active" data-filter="all" data-i18n="filter.all">' + t('filter.all') + '</button>';
     categoryPairs.forEach(([slug, label]) => {
       const btn = document.createElement('button');
       btn.className = 'filter';
@@ -1095,9 +1276,6 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-  db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-    console.warn('Cache local Firestore non disponible :', err.code);
-  });
 
   const categoryLabels = {
     ba: 'Bande-annonce',
@@ -1112,7 +1290,7 @@
     grid.innerHTML = '';
 
     if(snapshot.empty){
-      grid.innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;">De nouveaux projets arrivent bientôt.</p>';
+      grid.innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;" data-i18n="portfolio.empty">' + t('portfolio.empty') + '</p>';
       buildFilters([]);
       return;
     }
@@ -1154,7 +1332,7 @@
     applyActiveFilter();
   }).catch(err => {
     console.error('Erreur de chargement des projets :', err);
-    document.getElementById('grid').innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;">Impossible de charger les projets pour le moment.</p>';
+    document.getElementById('grid').innerHTML = '<p class="portfolio-sub" style="grid-column:1/-1;" data-i18n="portfolio.error">' + t('portfolio.error') + '</p>';
   });
 
   // Compteur de visites du site (silencieux, visible uniquement depuis /admin)

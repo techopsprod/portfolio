@@ -93,6 +93,7 @@
     display:flex; align-items:center; justify-content:space-between;
     padding:18px 32px;
     max-width:1140px; margin:0 auto;
+    position:relative;
   }
   .nav-id{ display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; cursor:pointer; }
   .nav-id .mark{
@@ -117,6 +118,49 @@
     animation:blink 1.6s infinite;
   }
   @keyframes blink{ 0%,45%{opacity:1;} 50%,95%{opacity:0.25;} 100%{opacity:1;} }
+
+  /* ---------- MENU HAMBURGER (MOBILE UNIQUEMENT) ---------- */
+  .nav-toggle{
+    display:none;
+    width:38px; height:38px;
+    background:transparent;
+    border:1px solid var(--line);
+    cursor:pointer;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    flex-shrink:0;
+  }
+  .nav-toggle span{
+    display:block; width:18px; height:2px; background:var(--text);
+    transition:.2s;
+  }
+  .nav-toggle.active span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  .nav-toggle.active span:nth-child(2){ opacity:0; }
+  .nav-toggle.active span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  @media (max-width:800px){
+    .nav-links{
+      display:none;
+      position:absolute;
+      top:100%; left:0; right:0;
+      flex-direction:column;
+      align-items:stretch;
+      gap:0;
+      background:var(--bg);
+      border-bottom:1px solid var(--line);
+      padding:8px 32px 18px;
+      box-shadow:0 12px 24px rgba(0,0,0,0.35);
+    }
+    .nav-links.open{ display:flex; }
+    .nav-links a{
+      padding:14px 0;
+      border-bottom:1px solid var(--line);
+      width:100%;
+    }
+    .nav-toggle{ display:flex; }
+  }
 
   /* ---------- HERO ---------- */
   .hero{
@@ -856,15 +900,19 @@
   </g>
 </svg>
       <span class="mark">RODRIGUE CORPECHOT</span>
-      <span class="role">TECHOPS — MONTEUR VIDÉO TF1</span>
+      <span class="role" data-i18n="nav.role">TECHOPS — MONTEUR VIDÉO TF1</span>
     </a>
     <nav class="nav-links">
-      <a href="index.html#parcours">Parcours</a>
-      <a href="index.html#portfolio">Montages</a>
-      <a href="index.html#competences">Compétences</a>
-      <a href="photographie.html">Photographie</a>
-      <a href="index.html#contact">Contact</a>
+      <a href="index.html#parcours" data-i18n="nav.parcours">Parcours</a>
+      <a href="index.html#portfolio" data-i18n="nav.montages">Montages</a>
+      <a href="index.html#competences" data-i18n="nav.competences">Compétences</a>
+      <a href="photographie.html" data-i18n="nav.photographie">Photographie</a>
+      <a href="index.html#contact" data-i18n="nav.contact">Contact</a>
+      <a href="#" id="langToggle" style="font-weight:600;">EN</a>
     </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div class="tc"><span class="dot"></span><span id="clock">00:00:00:00</span></div>
   </div>
 </header>
@@ -872,16 +920,16 @@
 <main>
   <section class="photo-hero">
     <div class="wrap">
-      <div class="eyebrow">À côté du montage</div>
-      <h1>Photographie</h1>
-      <p>Un autre regard sur l'image, en dehors du banc de montage. Quelques photos prises au fil des projets et des déplacements.</p>
+      <div class="eyebrow" data-i18n="photo.eyebrow">À côté du montage</div>
+      <h1 data-i18n="photo.title">Photographie</h1>
+      <p data-i18n="photo.p">Un autre regard sur l'image, en dehors du banc de montage. Quelques photos prises au fil des projets et des déplacements.</p>
     </div>
   </section>
 
   <section class="photo-gallery">
     <div class="wrap">
       <div id="photoAlbums">
-        <p class="portfolio-sub">Chargement…</p>
+        <p class="portfolio-sub" data-i18n="photo.loading">Chargement…</p>
       </div>
     </div>
   </section>
@@ -890,7 +938,7 @@
 <footer>
   <div class="wrap" style="display:flex; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px;">
     <span>© 2026 Rodrigue Corpechot — Techops</span>
-    <span>Monteur vidéo — Intermittent du spectacle</span>
+    <span data-i18n="footer.role">Monteur vidéo — Intermittent du spectacle</span>
   </div>
 </footer>
 
@@ -908,15 +956,12 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-  db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-    console.warn('Cache local Firestore non disponible :', err.code);
-  });
 
   db.collection('photos').orderBy('order', 'asc').get().then(snapshot => {
     const container = document.getElementById('photoAlbums');
     container.innerHTML = '';
     if(snapshot.empty){
-      container.innerHTML = '<p class="portfolio-sub">De nouvelles photos arrivent bientôt.</p>';
+      container.innerHTML = '<p class="portfolio-sub" data-i18n="photo.empty">' + t('photo.empty') + '</p>';
       return;
     }
 
@@ -959,11 +1004,76 @@
     });
   }).catch(err => {
     console.error('Erreur chargement photos :', err);
-    document.getElementById('photoAlbums').innerHTML = '<p class="portfolio-sub">Impossible de charger les photos pour le moment.</p>';
+    document.getElementById('photoAlbums').innerHTML = '<p class="portfolio-sub" data-i18n="photo.error">' + t('photo.error') + '</p>';
   });
 </script>
 
 <script>
+  // ---------- TRADUCTION FR / EN ----------
+  const translations = {
+    fr: {
+      'nav.role': 'TECHOPS — MONTEUR VIDÉO TF1',
+      'nav.parcours': 'Parcours',
+      'nav.montages': 'Montages',
+      'nav.competences': 'Compétences',
+      'nav.photographie': 'Photographie',
+      'nav.contact': 'Contact',
+      'photo.eyebrow': 'À côté du montage',
+      'photo.title': 'Photographie',
+      'photo.p': "Un autre regard sur l'image, en dehors du banc de montage. Quelques photos prises au fil des projets et des déplacements.",
+      'photo.loading': 'Chargement…',
+      'photo.empty': 'De nouvelles photos arrivent bientôt.',
+      'photo.error': 'Impossible de charger les photos pour le moment.',
+      'footer.role': 'Monteur vidéo — Intermittent du spectacle'
+    },
+    en: {
+      'nav.role': 'TECHOPS — VIDEO EDITOR, TF1',
+      'nav.parcours': 'Background',
+      'nav.montages': 'Work',
+      'nav.competences': 'Skills',
+      'nav.photographie': 'Photography',
+      'nav.contact': 'Contact',
+      'photo.eyebrow': 'Away from the edit',
+      'photo.title': 'Photography',
+      'photo.p': "A different way of looking at images, away from the editing bay. A few photos taken along the way, between projects and travels.",
+      'photo.loading': 'Loading…',
+      'photo.empty': 'New photos coming soon.',
+      'photo.error': 'Unable to load photos right now.',
+      'footer.role': 'Video editor — Freelance'
+    }
+  };
+
+  function t(key){
+    const lang = document.documentElement.lang === 'en' ? 'en' : 'fr';
+    return (translations[lang] && translations[lang][key]) || key;
+  }
+
+  function setLanguage(lang){
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const value = translations[lang][key];
+      if(value !== undefined) el.innerHTML = value;
+    });
+    const toggle = document.getElementById('langToggle');
+    if(toggle) toggle.textContent = lang === 'fr' ? 'EN' : 'FR';
+    localStorage.setItem('site-lang', lang);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('site-lang') || 'fr';
+    setLanguage(saved);
+  });
+
+  const langToggleBtn = document.getElementById('langToggle');
+  if(langToggleBtn){
+    langToggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const current = document.documentElement.lang === 'en' ? 'en' : 'fr';
+      setLanguage(current === 'fr' ? 'en' : 'fr');
+    });
+  }
+
   function pad(n){ return n.toString().padStart(2,'0'); }
   let frame = 0;
   function tick(){
@@ -974,6 +1084,20 @@
       pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) + ':' + pad(frame);
   }
   setInterval(tick, 40);
+
+  // Menu hamburger (mobile uniquement)
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.querySelector('.nav-links');
+  navToggle.addEventListener('click', () => {
+    navToggle.classList.toggle('active');
+    navLinks.classList.toggle('open');
+  });
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      navToggle.classList.remove('active');
+      navLinks.classList.remove('open');
+    });
+  });
 </script>
 
 </body>

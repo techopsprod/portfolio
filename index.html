@@ -321,10 +321,10 @@
   .contact-inner{ display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; }
   .contact h2{ font-size:2.2rem; max-width:480px; }
   .contact-status{
-    font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--accent); margin-top:16px;
-    display:flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono'; font-size:1rem; font-weight:600; color:var(--accent); margin-top:20px;
+    display:flex; align-items:center; gap:10px; letter-spacing:0.01em;
   }
-  .contact-status .dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); }
+  .contact-status .dot{ width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); }
   .contact-links{ display:flex; flex-direction:column; gap:14px; }
   .contact-links a{
     font-family:'IBM Plex Mono'; font-size:0.85rem; color:var(--text-dim);
@@ -625,6 +625,34 @@
   object-fit:cover;
   display:block;
   background:var(--surface-2);
+}
+
+/* ---------- LOGO EN FILIGRANE (HERO) ---------- */
+.hero-logo-watermark{
+  position:absolute;
+  top:50%;
+  right:-115px;
+  transform:translateY(-50%);
+  width:920px;
+  height:auto;
+  pointer-events:none;
+  z-index:0;
+}
+.hero-logo-watermark path{
+  fill:rgba(233,231,226,0.06);
+}
+.hero .wrap{
+  position:relative;
+  z-index:1;
+}
+@media (max-width:1100px){
+  .hero-logo-watermark{ width:680px; right:-90px; }
+}
+@media (max-width:900px){
+  .hero-logo-watermark{ width:460px; right:-100px; opacity:0.8; }
+}
+@media (max-width:600px){
+  .hero-logo-watermark{ display:none; }
 }
 
 </style>

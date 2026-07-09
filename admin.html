@@ -312,10 +312,10 @@
   .contact-inner{ display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; }
   .contact h2{ font-size:2.2rem; max-width:480px; }
   .contact-status{
-    font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--accent); margin-top:16px;
-    display:flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono'; font-size:1rem; font-weight:600; color:var(--accent); margin-top:20px;
+    display:flex; align-items:center; gap:10px; letter-spacing:0.01em;
   }
-  .contact-status .dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); }
+  .contact-status .dot{ width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); }
   .contact-links{ display:flex; flex-direction:column; gap:14px; }
   .contact-links a{
     font-family:'IBM Plex Mono'; font-size:0.85rem; color:var(--text-dim);
@@ -616,6 +616,34 @@
   object-fit:cover;
   display:block;
   background:var(--surface-2);
+}
+
+/* ---------- LOGO EN FILIGRANE (HERO) ---------- */
+.hero-logo-watermark{
+  position:absolute;
+  top:50%;
+  right:-115px;
+  transform:translateY(-50%);
+  width:920px;
+  height:auto;
+  pointer-events:none;
+  z-index:0;
+}
+.hero-logo-watermark path{
+  fill:rgba(233,231,226,0.06);
+}
+.hero .wrap{
+  position:relative;
+  z-index:1;
+}
+@media (max-width:1100px){
+  .hero-logo-watermark{ width:680px; right:-90px; }
+}
+@media (max-width:900px){
+  .hero-logo-watermark{ width:460px; right:-100px; opacity:0.8; }
+}
+@media (max-width:600px){
+  .hero-logo-watermark{ display:none; }
 }
 
 </style>
@@ -982,9 +1010,11 @@
       <p class="admin-note" id="addVideoMsg">&nbsp;</p>
 
       <h2 class="admin-section-title">Projets en ligne</h2>
+      <button type="button" class="row-delete-btn" id="repairVideosBtn" style="margin-bottom:18px;">Récupérer les anciennes vidéos</button>
       <table class="video-stats-table" id="videoTable">
         <thead>
           <tr>
+            <th>Ordre</th>
             <th>Projet</th>
             <th>Catégorie</th>
             <th>Vues YouTube</th>
@@ -992,7 +1022,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr><td colspan="4" style="color:var(--text-muted);">Chargement…</td></tr>
+          <tr><td colspan="5" style="color:var(--text-muted);">Chargement…</td></tr>
         </tbody>
       </table>
 
@@ -1154,6 +1184,21 @@
       .slice(0, 30) || 'autre';
   }
 
+  // Trie les vidéos par ordre défini ; celles sans ordre explicite passent après,
+  // triées par date récente — jamais exclues (contrairement à un orderBy Firestore).
+  function sortVideoDocs(docs){
+    return docs.slice().sort((a, b) => {
+      const oa = a.data().order;
+      const ob = b.data().order;
+      const va = typeof oa === 'number' ? oa : Infinity;
+      const vb = typeof ob === 'number' ? ob : Infinity;
+      if(va !== vb) return va - vb;
+      const ca = a.data().createdAt ? a.data().createdAt.toMillis() : 0;
+      const cb = b.data().createdAt ? b.data().createdAt.toMillis() : 0;
+      return cb - ca;
+    });
+  }
+
   function loadDashboardData(){
     // Compteur de visites du site
     db.collection('stats').doc('siteVisits').get().then(doc => {
@@ -1162,7 +1207,7 @@
     }).catch(err => console.error('Erreur lecture visites :', err));
 
     // Liste des vidéos + leurs vues YouTube
-    db.collection('videos').orderBy('createdAt', 'desc').get().then(snapshot => {
+    db.collection('videos').get().then(snapshot => {
       document.getElementById('statVideoCount').textContent = snapshot.size;
       const baCount = snapshot.docs.filter(d => d.data().category === 'ba').length;
       document.getElementById('statVideoDelta').textContent = baCount + ' bande(s)-annonce(s)';
@@ -1178,17 +1223,17 @@
 
       videoTable.innerHTML = '';
       if(snapshot.empty){
-        videoTable.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);">Aucun projet ajouté pour le moment.</td></tr>';
+        videoTable.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);">Aucun projet ajouté pour le moment.</td></tr>';
         document.getElementById('statTotalViews').textContent = '0';
         return;
       }
 
-      const docs = snapshot.docs; // garde les références doc.id pour édition/suppression
+      const docs = sortVideoDocs(snapshot.docs); // garde les références doc.id pour édition/suppression
       const ids = docs.map(d => d.data().youtubeId).filter(Boolean);
 
       fetchYoutubeViews(ids).then(viewsMap => {
         let total = 0;
-        docs.forEach(docSnap => {
+        docs.forEach((docSnap, index) => {
           const v = docSnap.data();
           const id = docSnap.id;
           const views = viewsMap[v.youtubeId];
@@ -1197,6 +1242,34 @@
 
           const row = document.createElement('tr');
           row.dataset.id = id;
+
+          // Colonne ordre : boutons monter / descendre / première place
+          const orderCell = document.createElement('td');
+          orderCell.style.whiteSpace = 'nowrap';
+
+          const firstBtn = document.createElement('button');
+          firstBtn.className = 'row-delete-btn';
+          firstBtn.textContent = '⇤ Premier';
+          firstBtn.style.marginRight = '6px';
+          firstBtn.disabled = index === 0;
+          firstBtn.addEventListener('click', () => moveVideoToFirst(docs, index));
+
+          const upBtn = document.createElement('button');
+          upBtn.className = 'row-delete-btn';
+          upBtn.textContent = '▲';
+          upBtn.style.marginRight = '4px';
+          upBtn.disabled = index === 0;
+          upBtn.addEventListener('click', () => swapVideoOrder(docs, index, index - 1));
+
+          const downBtn = document.createElement('button');
+          downBtn.className = 'row-delete-btn';
+          downBtn.textContent = '▼';
+          downBtn.disabled = index === docs.length - 1;
+          downBtn.addEventListener('click', () => swapVideoOrder(docs, index, index + 1));
+
+          orderCell.appendChild(firstBtn);
+          orderCell.appendChild(upBtn);
+          orderCell.appendChild(downBtn);
 
           const titleCell = document.createElement('td');
           const titleInput = document.createElement('input');
@@ -1242,6 +1315,7 @@
           });
           actionsCell.appendChild(deleteBtn);
 
+          row.appendChild(orderCell);
           row.appendChild(titleCell);
           row.appendChild(catCell);
           row.appendChild(viewsCell);
@@ -1252,9 +1326,68 @@
       });
     }).catch(err => {
       console.error('Erreur lecture vidéos :', err);
-      videoTable.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);">Erreur de chargement.</td></tr>';
+      videoTable.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);">Erreur de chargement.</td></tr>';
     });
   }
+
+  // Échange la position (le champ "order") de deux vidéos adjacentes
+  function swapVideoOrder(docs, i, j){
+    const a = docs[i], b = docs[j];
+    const orderA = a.data().order ?? i;
+    const orderB = b.data().order ?? j;
+    Promise.all([
+      db.collection('videos').doc(a.id).update({ order: orderB }),
+      db.collection('videos').doc(b.id).update({ order: orderA })
+    ]).then(loadDashboardData).catch(err => console.error('Erreur réordonnancement :', err));
+  }
+
+  // Place une vidéo en toute première position
+  function moveVideoToFirst(docs, index){
+    const moved = docs[index];
+    const newFirstOrder = (docs[0].data().order ?? 0) - 1;
+    db.collection('videos').doc(moved.id).update({ order: newFirstOrder })
+      .then(loadDashboardData).catch(err => console.error('Erreur déplacement :', err));
+  }
+
+  // Répare les vidéos ajoutées avant la mise en place du champ "order"
+  document.getElementById('repairVideosBtn').addEventListener('click', () => {
+    const btn = document.getElementById('repairVideosBtn');
+    btn.textContent = 'Recherche en cours…';
+    db.collection('videos').get().then(snapshot => {
+      let maxOrder = 0;
+      snapshot.forEach(doc => {
+        const order = doc.data().order;
+        if(typeof order === 'number' && order > maxOrder) maxOrder = order;
+      });
+
+      const toFix = snapshot.docs.filter(doc => typeof doc.data().order !== 'number');
+      if(toFix.length === 0){
+        alert('Aucune vidéo à récupérer — tout est déjà en ordre.');
+        btn.textContent = 'Récupérer les anciennes vidéos';
+        return;
+      }
+
+      // Conserve l'ordre chronologique actuel (plus récent en premier) au moment de l'assignation
+      toFix.sort((a, b) => {
+        const ca = a.data().createdAt ? a.data().createdAt.toMillis() : 0;
+        const cb = b.data().createdAt ? b.data().createdAt.toMillis() : 0;
+        return cb - ca;
+      });
+
+      const batch = db.batch();
+      toFix.forEach(doc => {
+        maxOrder++;
+        batch.update(doc.ref, { order: maxOrder });
+      });
+      batch.commit().then(() => {
+        alert(toFix.length + ' vidéo(s) restaurée(s) avec succès.');
+        loadDashboardData();
+      }).catch(err => {
+        console.error('Erreur réparation vidéos :', err);
+        alert('Une erreur est survenue, réessaie.');
+      }).finally(() => { btn.textContent = 'Récupérer les anciennes vidéos'; });
+    });
+  });
 
   // Reconstruit les options du menu déroulant "Catégorie" du formulaire d'ajout
   function refreshCategoryOptions(){
@@ -1698,12 +1831,20 @@
     const submitBtn = addVideoForm.querySelector('.admin-submit');
     submitBtn.textContent = 'Ajout…';
 
-    db.collection('videos').add({
-      title,
-      category,
-      categoryLabel,
-      youtubeId,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    db.collection('videos').get().then(snapshot => {
+      let maxOrder = 0;
+      snapshot.forEach(doc => {
+        const order = doc.data().order;
+        if(typeof order === 'number' && order > maxOrder) maxOrder = order;
+      });
+      return db.collection('videos').add({
+        title,
+        category,
+        categoryLabel,
+        youtubeId,
+        order: maxOrder + 1,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
     }).then(() => {
       addVideoMsg.textContent = 'Vidéo ajoutée — elle est déjà visible sur le site public.';
       addVideoMsg.style.color = 'var(--text-muted)';

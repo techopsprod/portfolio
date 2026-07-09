@@ -1313,8 +1313,23 @@
     pub: 'Pub'
   };
 
+  // Trie les vidéos par ordre défini dans l'admin ; celles sans ordre explicite
+  // (pas encore migrées) passent après, triées par date récente — jamais exclues.
+  function sortVideoDocs(docs){
+    return docs.slice().sort((a, b) => {
+      const oa = a.data().order;
+      const ob = b.data().order;
+      const va = typeof oa === 'number' ? oa : Infinity;
+      const vb = typeof ob === 'number' ? ob : Infinity;
+      if(va !== vb) return va - vb;
+      const ca = a.data().createdAt ? a.data().createdAt.toMillis() : 0;
+      const cb = b.data().createdAt ? b.data().createdAt.toMillis() : 0;
+      return cb - ca;
+    });
+  }
+
   // Charge les projets réels depuis Firestore et construit les cartes + les filtres
-  db.collection('videos').orderBy('createdAt', 'desc').get().then(snapshot => {
+  db.collection('videos').get().then(snapshot => {
     const grid = document.getElementById('grid');
     grid.innerHTML = '';
 
@@ -1324,9 +1339,11 @@
       return;
     }
 
+    const docs = sortVideoDocs(snapshot.docs);
+
     // Construit la liste des catégories réellement utilisées (dans l'ordre de première apparition)
     const seen = new Map();
-    snapshot.forEach(doc => {
+    docs.forEach(doc => {
       const v = doc.data();
       if(v.category && !seen.has(v.category)){
         seen.set(v.category, v.categoryLabel || categoryLabels[v.category] || v.category);
@@ -1334,11 +1351,9 @@
     });
     buildFilters([...seen.entries()]);
 
-    let n = snapshot.size;
-    snapshot.forEach(doc => {
+    docs.forEach((doc, i) => {
       const v = doc.data();
-      const num = String(n).padStart(3, '0');
-      n--;
+      const num = String(i + 1).padStart(3, '0');
       const card = document.createElement('div');
       card.className = 'card';
       card.dataset.cat = v.category || '';

@@ -1130,8 +1130,13 @@
             <option value="">— Aucune (rien n'apparaît) —</option>
           </select>
         </div>
+        <div class="admin-field" style="min-width:220px;">
+          <label>Texte au-dessus (optionnel)</label>
+          <input type="text" id="featuredLabelInput" placeholder="Ex : Showreel 2026">
+        </div>
         <button type="button" class="admin-submit" id="featuredSaveBtn" style="width:auto; padding:13px 22px;">Enregistrer</button>
       </div>
+      <p class="admin-note" style="margin-top:8px;">Laisse ce champ vide pour n'afficher aucun texte au-dessus de la vidéo.</p>
       <p class="admin-note" id="featuredMsg">&nbsp;</p>
 
       <h2 class="admin-section-title" style="margin-top:56px;">Ajouter une photo</h2>
@@ -1309,6 +1314,7 @@
 
   // Vidéo à la une : peuple le menu déroulant et gère la sauvegarde
   const featuredSelect = document.getElementById('featuredSelect');
+  const featuredLabelInput = document.getElementById('featuredLabelInput');
   const featuredSaveBtn = document.getElementById('featuredSaveBtn');
   const featuredMsg = document.getElementById('featuredMsg');
   let currentFeaturedId = null;
@@ -1327,6 +1333,7 @@
 
   db.collection('settings').doc('featured').get().then(doc => {
     currentFeaturedId = doc.exists ? (doc.data().videoId || null) : null;
+    featuredLabelInput.value = doc.exists ? (doc.data().label || '') : '';
     if(currentFeaturedId){
       const opt = featuredSelect.querySelector(`option[value="${currentFeaturedId}"]`);
       if(opt) opt.selected = true;
@@ -1335,6 +1342,7 @@
 
   featuredSaveBtn.addEventListener('click', () => {
     const selectedId = featuredSelect.value;
+    const label = featuredLabelInput.value.trim();
     featuredSaveBtn.textContent = 'Enregistrement…';
 
     if(!selectedId){
@@ -1353,7 +1361,8 @@
       return db.collection('settings').doc('featured').set({
         videoId: selectedId,
         youtubeId: v.youtubeId,
-        title: v.title || ''
+        title: v.title || '',
+        label: label
       });
     }).then(() => {
       currentFeaturedId = selectedId;

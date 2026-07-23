@@ -1045,9 +1045,9 @@
 <main>
   <section class="featured-video" id="featuredVideo" style="display:none;">
     <div class="wrap">
-      <div class="featured-video-eyebrow">
+      <div class="featured-video-eyebrow" id="featuredVideoEyebrow" style="display:none;">
         <span class="dot"></span>
-        <span class="eyebrow" data-i18n="featured.label">À la une</span>
+        <span class="eyebrow" id="featuredVideoLabel"></span>
       </div>
       <div class="featured-video-thumb" id="featuredVideoThumb">
         <img id="featuredVideoImg" src="" alt="" loading="lazy">
@@ -1199,7 +1199,6 @@
       'nav.competences': 'Compétences',
       'nav.photographie': 'Photographie',
       'nav.contact': 'Contact',
-      'featured.label': 'À la une',
       'toast.emailCopied': 'Adresse email copiée',
       'hero.eyebrow': 'Rodrigue Corpechot — Techops — Monteur vidéo',
       'hero.h1': 'La maîtrise libère la sensibilité, <span>et c\'est ainsi que je façonne le récit.</span>',
@@ -1243,7 +1242,6 @@
       'nav.competences': 'Skills',
       'nav.photographie': 'Photography',
       'nav.contact': 'Contact',
-      'featured.label': 'Featured',
       'toast.emailCopied': 'Email address copied',
       'hero.eyebrow': 'Rodrigue Corpechot — Techops — Video Editor',
       'hero.h1': 'Mastery sets sensitivity free, <span>and that\'s how I shape the story.</span>',
@@ -1453,6 +1451,10 @@
     const thumb = document.getElementById('featuredVideoThumb');
     document.getElementById('featuredVideoImg').src = `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`;
     document.getElementById('featuredVideoTitle').textContent = v.title || '';
+    if(v.label){
+      document.getElementById('featuredVideoLabel').textContent = v.label;
+      document.getElementById('featuredVideoEyebrow').style.display = 'flex';
+    }
     thumb.addEventListener('click', () => openLightbox(v.youtubeId, v.title));
     section.style.display = 'block';
   }).catch(err => console.error('Erreur lecture vidéo à la une :', err));

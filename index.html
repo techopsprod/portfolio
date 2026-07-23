@@ -7,7 +7,7 @@
 <meta name="description" content="Monteur vidéo — alternance bandes-annonces TF1. Portfolio : bandes-annonces, fiction, films de cause, publicité.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Rodrigue Corpechot — Techops — Monteur vidéo">
-<meta property="og:description" content="Entre rigueur et sensibilité, je façonne le récit. Monteur vidéo — alternance bandes-annonces TF1.">
+<meta property="og:description" content="La maîtrise libère la sensibilité, et c'est ainsi que je façonne le récit. Monteur vidéo — alternance bandes-annonces TF1.">
 <meta property="og:image" content="https://techops-prod.fr/og-image.jpg">
 <meta property="og:url" content="https://techops-prod.fr/">
 <link rel="canonical" href="https://techops-prod.fr/">
@@ -162,6 +162,59 @@
       width:100%;
     }
     .nav-toggle{ display:flex; }
+  }
+
+  /* ---------- VIDÉO À LA UNE ---------- */
+  .featured-video{
+    border-bottom:1px solid var(--line);
+    padding:56px 0;
+  }
+  .featured-video-eyebrow{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:22px;
+  }
+  .featured-video-eyebrow .dot{
+    width:7px; height:7px; border-radius:50%; background:var(--accent);
+    box-shadow:0 0 6px var(--accent);
+  }
+  .featured-video-thumb{
+    position:relative;
+    aspect-ratio:21/9;
+    overflow:hidden;
+    cursor:pointer;
+    background:repeating-linear-gradient(135deg, #20242C 0 2px, #23272F 2px 4px);
+    border:1px solid var(--line);
+  }
+  .featured-video-thumb img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+  }
+  .featured-video-thumb::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.6) 100%);
+  }
+  .featured-video-thumb .play{
+    width:64px; height:64px;
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    z-index:1;
+  }
+  .featured-video-thumb .play::after{
+    border-top-width:9px; border-bottom-width:9px; border-left-width:13px;
+    margin-left:4px;
+  }
+  .featured-video-thumb:hover .play{ border-color:var(--accent); background:var(--accent); }
+  .featured-video-title{
+    position:absolute; bottom:0; left:0; right:0;
+    padding:26px 30px;
+    z-index:1;
+  }
+  .featured-video-title h2{ font-size:1.6rem; color:var(--text); }
+  @media (max-width:700px){
+    .featured-video-thumb{ aspect-ratio:16/10; }
+    .featured-video-title{ padding:18px 20px; }
+    .featured-video-title h2{ font-size:1.25rem; }
   }
 
   /* ---------- HERO ---------- */
@@ -448,6 +501,48 @@
   color:var(--text-dim);
   margin-top:14px;
   letter-spacing:0.04em;
+}
+
+/* ---------- LIGHTBOX PHOTO ---------- */
+.lightbox-photo-frame{
+  position:relative;
+  width:100%;
+  max-height:82vh;
+  background:#000;
+  border:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.lightbox-photo-frame img{
+  width:100%;
+  height:100%;
+  max-height:82vh;
+  object-fit:contain;
+  display:block;
+}
+
+/* ---------- TOAST DE NOTIFICATION ---------- */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:36px;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--surface);
+  border:1px solid var(--accent);
+  color:var(--text);
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.75rem;
+  letter-spacing:0.04em;
+  padding:14px 22px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s, transform .25s;
+  z-index:200;
+}
+.toast.visible{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
 }
 
 /* ---------- PAGE ADMIN ---------- */
@@ -948,10 +1043,26 @@
 </header>
 
 <main>
+  <section class="featured-video" id="featuredVideo" style="display:none;">
+    <div class="wrap">
+      <div class="featured-video-eyebrow">
+        <span class="dot"></span>
+        <span class="eyebrow" data-i18n="featured.label">À la une</span>
+      </div>
+      <div class="featured-video-thumb" id="featuredVideoThumb">
+        <img id="featuredVideoImg" src="" alt="" loading="lazy">
+        <div class="featured-video-title">
+          <h2 id="featuredVideoTitle"></h2>
+        </div>
+        <div class="play"></div>
+      </div>
+    </div>
+  </section>
+
   <section class="hero">
     <div class="wrap">
       <div class="eyebrow" data-i18n="hero.eyebrow">Rodrigue Corpechot — Techops — Monteur vidéo</div>
-      <h1 data-i18n="hero.h1">Entre rigueur et sensibilité, <span>je façonne le récit.</span></h1>
+      <h1 data-i18n="hero.h1">La maîtrise libère la sensibilité, <span>et c'est ainsi que je façonne le récit.</span></h1>
       <p data-i18n="hero.p">Monteur vidéo depuis un an, en alternance au service Bandes-Annonces de TF1. Avant ça, huit années dans l'Armée de Terre qui m'ont donné le goût du travail bien fait et le sens du collectif. Vous trouverez ici mes projets — courts-métrages, films de cause, bandes-annonces télévisées — et un aperçu de ma manière de raconter des histoires en images.</p>
       <div class="hero-cta">
         <a href="#portfolio" class="btn btn-primary" data-i18n="hero.cta1">Voir les montages</a>
@@ -1049,14 +1160,16 @@
           <div class="contact-status"><span class="dot"></span><span data-i18n="contact.status">Disponible en intermittence — dès septembre 2026</span></div>
         </div>
         <div class="contact-links">
-          <a href="mailto:contact@techops-prod.fr"><span data-i18n="contact.email">Email</span> <span>→</span></a>
-          <a href="https://instagram.com/Techops_prod">Instagram — @Techops_prod <span>→</span></a>
-          <a href="https://www.linkedin.com/in/rodrigue-corpechot">LinkedIn — Rodrigue Corpechot <span>→</span></a>
-          <a href="https://www.youtube.com/@techops_prod">YouTube <span>→</span></a>
+          <a href="#" id="copyEmailBtn" data-email="contact@techops-prod.fr"><span data-i18n="contact.email">Email</span> <span>⧉</span></a>
+          <a href="https://instagram.com/Techops_prod" target="_blank" rel="noopener noreferrer">Instagram — @Techops_prod <span>→</span></a>
+          <a href="https://www.linkedin.com/in/rodrigue-corpechot" target="_blank" rel="noopener noreferrer">LinkedIn — Rodrigue Corpechot <span>→</span></a>
+          <a href="https://www.youtube.com/@techops_prod" target="_blank" rel="noopener noreferrer">YouTube <span>→</span></a>
         </div>
       </div>
     </div>
   </section>
+
+  <div class="toast" id="toast"></div>
 </main>
 
 <footer>
@@ -1086,8 +1199,10 @@
       'nav.competences': 'Compétences',
       'nav.photographie': 'Photographie',
       'nav.contact': 'Contact',
+      'featured.label': 'À la une',
+      'toast.emailCopied': 'Adresse email copiée',
       'hero.eyebrow': 'Rodrigue Corpechot — Techops — Monteur vidéo',
-      'hero.h1': 'Entre rigueur et sensibilité, <span>je façonne le récit.</span>',
+      'hero.h1': 'La maîtrise libère la sensibilité, <span>et c\'est ainsi que je façonne le récit.</span>',
       'hero.p': "Monteur vidéo depuis un an, en alternance au service Bandes-Annonces de TF1. Avant ça, huit années dans l'Armée de Terre qui m'ont donné le goût du travail bien fait et le sens du collectif. Vous trouverez ici mes projets — courts-métrages, films de cause, bandes-annonces télévisées — et un aperçu de ma manière de raconter des histoires en images.",
       'hero.cta1': 'Voir les montages',
       'hero.cta2': 'Me contacter',
@@ -1128,8 +1243,10 @@
       'nav.competences': 'Skills',
       'nav.photographie': 'Photography',
       'nav.contact': 'Contact',
+      'featured.label': 'Featured',
+      'toast.emailCopied': 'Email address copied',
       'hero.eyebrow': 'Rodrigue Corpechot — Techops — Video Editor',
-      'hero.h1': 'Between discipline and sensitivity, <span>I shape the story.</span>',
+      'hero.h1': 'Mastery sets sensitivity free, <span>and that\'s how I shape the story.</span>',
       'hero.p': "Video editor for one year now, on a work-study placement with TF1's Trailers department. Before that, eight years in the French Army taught me the value of thorough work and teamwork. Here you'll find my projects — short films, cause-driven films, TV trailers — and a glimpse of how I like to tell stories through images.",
       'hero.cta1': 'View the work',
       'hero.cta2': 'Get in touch',
@@ -1289,6 +1406,28 @@
   document.addEventListener('keydown', (e) => {
     if(e.key === 'Escape'){ closeLightbox(); }
   });
+
+  // Copier l'adresse email au clic, avec notification
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast(message){
+    toast.textContent = message;
+    toast.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('visible'), 2400);
+  }
+
+  const copyEmailBtn = document.getElementById('copyEmailBtn');
+  copyEmailBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const email = copyEmailBtn.dataset.email;
+    navigator.clipboard.writeText(email).then(() => {
+      showToast(t('toast.emailCopied'));
+    }).catch(() => {
+      // Repli si le presse-papiers est indisponible (navigateur ancien, contexte non sécurisé)
+      window.location.href = `mailto:${email}`;
+    });
+  });
 </script>
 
 <!-- Firebase — chargement des projets réels + compteur de visites -->
@@ -1305,6 +1444,18 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+
+  // Vidéo à la une (choisie depuis l'admin)
+  db.collection('settings').doc('featured').get().then(doc => {
+    if(!doc.exists || !doc.data().youtubeId) return;
+    const v = doc.data();
+    const section = document.getElementById('featuredVideo');
+    const thumb = document.getElementById('featuredVideoThumb');
+    document.getElementById('featuredVideoImg').src = `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`;
+    document.getElementById('featuredVideoTitle').textContent = v.title || '';
+    thumb.addEventListener('click', () => openLightbox(v.youtubeId, v.title));
+    section.style.display = 'block';
+  }).catch(err => console.error('Erreur lecture vidéo à la une :', err));
 
   const categoryLabels = {
     ba: 'Bande-annonce',

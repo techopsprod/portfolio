@@ -163,6 +163,59 @@
     .nav-toggle{ display:flex; }
   }
 
+  /* ---------- VIDÉO À LA UNE ---------- */
+  .featured-video{
+    border-bottom:1px solid var(--line);
+    padding:56px 0;
+  }
+  .featured-video-eyebrow{
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:22px;
+  }
+  .featured-video-eyebrow .dot{
+    width:7px; height:7px; border-radius:50%; background:var(--accent);
+    box-shadow:0 0 6px var(--accent);
+  }
+  .featured-video-thumb{
+    position:relative;
+    aspect-ratio:21/9;
+    overflow:hidden;
+    cursor:pointer;
+    background:repeating-linear-gradient(135deg, #20242C 0 2px, #23272F 2px 4px);
+    border:1px solid var(--line);
+  }
+  .featured-video-thumb img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+  }
+  .featured-video-thumb::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.6) 100%);
+  }
+  .featured-video-thumb .play{
+    width:64px; height:64px;
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    z-index:1;
+  }
+  .featured-video-thumb .play::after{
+    border-top-width:9px; border-bottom-width:9px; border-left-width:13px;
+    margin-left:4px;
+  }
+  .featured-video-thumb:hover .play{ border-color:var(--accent); background:var(--accent); }
+  .featured-video-title{
+    position:absolute; bottom:0; left:0; right:0;
+    padding:26px 30px;
+    z-index:1;
+  }
+  .featured-video-title h2{ font-size:1.6rem; color:var(--text); }
+  @media (max-width:700px){
+    .featured-video-thumb{ aspect-ratio:16/10; }
+    .featured-video-title{ padding:18px 20px; }
+    .featured-video-title h2{ font-size:1.25rem; }
+  }
+
   /* ---------- HERO ---------- */
   .hero{
     padding:110px 0 90px;
@@ -320,10 +373,10 @@
   .contact-inner{ display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; }
   .contact h2{ font-size:2.2rem; max-width:480px; }
   .contact-status{
-    font-family:'IBM Plex Mono'; font-size:0.75rem; color:var(--accent); margin-top:16px;
-    display:flex; align-items:center; gap:8px;
+    font-family:'IBM Plex Mono'; font-size:1rem; font-weight:600; color:var(--accent); margin-top:20px;
+    display:flex; align-items:center; gap:10px; letter-spacing:0.01em;
   }
-  .contact-status .dot{ width:7px; height:7px; border-radius:50%; background:var(--accent); }
+  .contact-status .dot{ width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); }
   .contact-links{ display:flex; flex-direction:column; gap:14px; }
   .contact-links a{
     font-family:'IBM Plex Mono'; font-size:0.85rem; color:var(--text-dim);
@@ -447,6 +500,48 @@
   color:var(--text-dim);
   margin-top:14px;
   letter-spacing:0.04em;
+}
+
+/* ---------- LIGHTBOX PHOTO ---------- */
+.lightbox-photo-frame{
+  position:relative;
+  width:100%;
+  max-height:82vh;
+  background:#000;
+  border:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.lightbox-photo-frame img{
+  width:100%;
+  height:100%;
+  max-height:82vh;
+  object-fit:contain;
+  display:block;
+}
+
+/* ---------- TOAST DE NOTIFICATION ---------- */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:36px;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--surface);
+  border:1px solid var(--accent);
+  color:var(--text);
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.75rem;
+  letter-spacing:0.04em;
+  padding:14px 22px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s, transform .25s;
+  z-index:200;
+}
+.toast.visible{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
 }
 
 /* ---------- PAGE ADMIN ---------- */
@@ -624,6 +719,34 @@
   object-fit:cover;
   display:block;
   background:var(--surface-2);
+}
+
+/* ---------- LOGO EN FILIGRANE (HERO) ---------- */
+.hero-logo-watermark{
+  position:absolute;
+  top:50%;
+  right:-115px;
+  transform:translateY(-50%);
+  width:920px;
+  height:auto;
+  pointer-events:none;
+  z-index:0;
+}
+.hero-logo-watermark path{
+  fill:rgba(233,231,226,0.06);
+}
+.hero .wrap{
+  position:relative;
+  z-index:1;
+}
+@media (max-width:1100px){
+  .hero-logo-watermark{ width:680px; right:-90px; }
+}
+@media (max-width:900px){
+  .hero-logo-watermark{ width:460px; right:-100px; opacity:0.8; }
+}
+@media (max-width:600px){
+  .hero-logo-watermark{ display:none; }
 }
 
 </style>
@@ -936,6 +1059,16 @@
   </section>
 </main>
 
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" id="lightboxClose">Fermer ✕</button>
+    <div class="lightbox-photo-frame">
+      <img id="lightboxImg" src="" alt="">
+    </div>
+    <div class="lightbox-title" id="lightboxTitle"></div>
+  </div>
+</div>
+
 <footer>
   <div class="wrap" style="display:flex; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px;">
     <span>© 2026 Rodrigue Corpechot — Techops</span>
@@ -998,6 +1131,7 @@
         const item = document.createElement('div');
         item.className = 'photo-item';
         item.innerHTML = `<img src="${p.url}" alt="${p.caption || ''}" loading="lazy">`;
+        item.addEventListener('click', () => openLightbox(p.url, p.caption || ''));
         grid.appendChild(item);
       });
       block.appendChild(grid);
@@ -1018,6 +1152,33 @@
       { merge: true }
     ).catch(err => console.error('Erreur stats de provenance :', err));
   })();
+
+  // Lightbox photo
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxTitle = document.getElementById('lightboxTitle');
+  const lightboxClose = document.getElementById('lightboxClose');
+
+  function openLightbox(url, caption){
+    lightboxImg.src = url;
+    lightboxTitle.textContent = caption || '';
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox(){
+    lightbox.classList.remove('open');
+    lightboxImg.src = '';
+    document.body.style.overflow = '';
+  }
+
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => {
+    if(e.target === lightbox){ closeLightbox(); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){ closeLightbox(); }
+  });
 </script>
 
 <script>

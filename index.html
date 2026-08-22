@@ -1375,7 +1375,7 @@
   const lightboxClose = document.getElementById('lightboxClose');
 
   function openLightbox(youtubeId, title){
-    lightboxIframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`;
+    lightboxIframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1&cc_load_policy=0`;
     lightboxTitle.textContent = title || '';
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';

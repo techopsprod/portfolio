@@ -347,6 +347,19 @@
   .card-body .client{
     font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); letter-spacing:0.03em;
   }
+  .card-roles{
+    display:flex; flex-wrap:wrap; gap:6px;
+    margin-top:14px;
+  }
+  .role-chip{
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; font-weight:500;
+    letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text-dim);
+    border:1px solid var(--line);
+    padding:4px 9px;
+    transition:.15s;
+  }
+  .card:hover .role-chip{ border-color:var(--accent); color:var(--text); }
 
   /* ---------- COMPETENCES ---------- */
   .skills{ padding:80px 0; border-bottom:1px solid var(--line); }
@@ -1101,6 +1114,10 @@
           <label>Nom de la nouvelle catégorie</label>
           <input type="text" id="newCategoryName" placeholder="Ex : Documentaire">
         </div>
+        <div class="admin-field" style="margin-top:14px; margin-bottom:0;">
+          <label>Rôle(s) sur ce projet (séparés par des virgules)</label>
+          <input type="text" id="videoRoles" placeholder="Ex : Montage, Étalonnage, Sous-titrage">
+        </div>
       </form>
       <p class="admin-note" id="addVideoMsg">&nbsp;</p>
 
@@ -1112,12 +1129,13 @@
             <th>Ordre</th>
             <th>Projet</th>
             <th>Catégorie</th>
+            <th>Rôle(s)</th>
             <th>Vues YouTube</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td colspan="5" style="color:var(--text-muted);">Chargement…</td></tr>
+          <tr><td colspan="6" style="color:var(--text-muted);">Chargement…</td></tr>
         </tbody>
       </table>
 
@@ -1299,6 +1317,22 @@
 
   // Trie les vidéos par ordre défini ; celles sans ordre explicite passent après,
   // triées par date récente — jamais exclues (contrairement à un orderBy Firestore).
+  // Transforme "montage, étalonnage ; sous-titrage" en ["Montage", "Étalonnage", "Sous-titrage"]
+  // (séparateurs : virgule ou point-virgule, doublons retirés, 8 rôles max)
+  function parseRoles(str){
+    const seen = new Set();
+    const roles = [];
+    (str || '').split(/[,;]/).forEach(part => {
+      const r = part.trim().slice(0, 40);
+      if(!r) return;
+      const key = r.toLowerCase();
+      if(seen.has(key)) return;
+      seen.add(key);
+      roles.push(r.charAt(0).toUpperCase() + r.slice(1));
+    });
+    return roles.slice(0, 8);
+  }
+
   function sortVideoDocs(docs){
     return docs.slice().sort((a, b) => {
       const oa = a.data().order;
@@ -1399,7 +1433,7 @@
 
       videoTable.innerHTML = '';
       if(snapshot.empty){
-        videoTable.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);">Aucun projet ajouté pour le moment.</td></tr>';
+        videoTable.innerHTML = '<tr><td colspan="6" style="color:var(--text-muted);">Aucun projet ajouté pour le moment.</td></tr>';
         document.getElementById('statTotalViews').textContent = '0';
         return;
       }
@@ -1476,6 +1510,19 @@
           });
           catCell.appendChild(catSelect);
 
+          const rolesCell = document.createElement('td');
+          const rolesInput = document.createElement('input');
+          rolesInput.className = 'row-edit-input';
+          rolesInput.placeholder = 'Ex : Montage, Étalonnage';
+          rolesInput.value = Array.isArray(v.roles) ? v.roles.join(', ') : '';
+          rolesInput.addEventListener('change', () => {
+            const roles = parseRoles(rolesInput.value);
+            rolesInput.value = roles.join(', '); // réaffiche la version nettoyée
+            db.collection('videos').doc(id).update({ roles })
+              .catch(err => console.error('Erreur mise à jour rôles :', err));
+          });
+          rolesCell.appendChild(rolesInput);
+
           const viewsCell = document.createElement('td');
           viewsCell.className = 'num';
           viewsCell.textContent = viewsDisplay;
@@ -1496,6 +1543,7 @@
           row.appendChild(orderCell);
           row.appendChild(titleCell);
           row.appendChild(catCell);
+          row.appendChild(rolesCell);
           row.appendChild(viewsCell);
           row.appendChild(actionsCell);
           videoTable.appendChild(row);
@@ -1504,7 +1552,7 @@
       });
     }).catch(err => {
       console.error('Erreur lecture vidéos :', err);
-      videoTable.innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);">Erreur de chargement.</td></tr>';
+      videoTable.innerHTML = '<tr><td colspan="6" style="color:var(--text-muted);">Erreur de chargement.</td></tr>';
     });
   }
 
@@ -2020,6 +2068,7 @@
         category,
         categoryLabel,
         youtubeId,
+        roles: parseRoles(document.getElementById('videoRoles').value),
         order: maxOrder + 1,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });

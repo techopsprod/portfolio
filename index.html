@@ -356,6 +356,19 @@
   .card-body .client{
     font-family:'IBM Plex Mono'; font-size:0.72rem; color:var(--text-muted); letter-spacing:0.03em;
   }
+  .card-roles{
+    display:flex; flex-wrap:wrap; gap:6px;
+    margin-top:14px;
+  }
+  .role-chip{
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; font-weight:500;
+    letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--text-dim);
+    border:1px solid var(--line);
+    padding:4px 9px;
+    transition:.15s;
+  }
+  .card:hover .role-chip{ border-color:var(--accent); color:var(--text); }
 
   /* ---------- COMPETENCES ---------- */
   .skills{ padding:80px 0; border-bottom:1px solid var(--line); }
@@ -1522,6 +1535,20 @@
         <div class="card-body">
           <h3>${v.title || ''}</h3>
         </div>`;
+
+      // Rôles tenus sur ce projet (ajoutés depuis l'admin) — rien si la liste est vide
+      if(Array.isArray(v.roles) && v.roles.length){
+        const rolesBox = document.createElement('div');
+        rolesBox.className = 'card-roles';
+        v.roles.forEach(role => {
+          const chip = document.createElement('span');
+          chip.className = 'role-chip';
+          chip.textContent = role;
+          rolesBox.appendChild(chip);
+        });
+        card.querySelector('.card-body').appendChild(rolesBox);
+      }
+
       grid.appendChild(card);
     });
 

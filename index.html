@@ -1063,7 +1063,7 @@
         <span class="eyebrow" id="featuredVideoLabel"></span>
       </div>
       <div class="featured-video-thumb" id="featuredVideoThumb">
-        <img id="featuredVideoImg" src="" alt="" loading="lazy">
+        <img id="featuredVideoImg" src="" alt="" loading="eager" fetchpriority="high" decoding="async">
         <div class="featured-video-title">
           <h2 id="featuredVideoTitle"></h2>
         </div>
@@ -1462,7 +1462,21 @@
     const v = doc.data();
     const section = document.getElementById('featuredVideo');
     const thumb = document.getElementById('featuredVideoThumb');
-    document.getElementById('featuredVideoImg').src = `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`;
+    // Miniature en haute définition (1280×720), avec repli automatique si elle n'existe pas
+    const featuredImg = document.getElementById('featuredVideoImg');
+    const thumbBase = `https://i.ytimg.com/vi/${v.youtubeId}/`;
+    const thumbSizes = ['maxresdefault.jpg', 'sddefault.jpg', 'hqdefault.jpg'];
+    let thumbTry = 0;
+    const nextThumb = () => {
+      if(thumbTry < thumbSizes.length - 1){
+        thumbTry++;
+        featuredImg.src = thumbBase + thumbSizes[thumbTry];
+      }
+    };
+    featuredImg.onerror = nextThumb;
+    // YouTube renvoie parfois une image de remplacement minuscule (120×90) au lieu d'une erreur
+    featuredImg.onload = () => { if(featuredImg.naturalWidth <= 200) nextThumb(); };
+    featuredImg.src = thumbBase + thumbSizes[0];
     document.getElementById('featuredVideoTitle').textContent = v.title || '';
     if(v.label){
       document.getElementById('featuredVideoLabel').textContent = v.label;
